@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const MyApp());
-}
+import 'package:frontend/superbase_config.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -107,4 +104,11 @@ class _MyHomePageState extends State<MyHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await initSupabase();
+  runApp(const MyApp());
 }
