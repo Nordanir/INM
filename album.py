@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from uuid import UUID as uuid
 from track import Track
-
 from PIL.Image import Image
 
 
@@ -15,4 +14,4 @@ class Album:
     number_of_tracks: int
     artists: str | list
     language: str
-    cover: str | Image
+    cover_url: str | Image

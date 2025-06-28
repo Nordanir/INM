@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from wand.image import Image as BlobImage
+from uuid import UUID as uuid
 from PIL.Image import Image
 
 
 @dataclass
 class Artist:
-    id: int
+    id: uuid
     number_of_albums: int
     is_active: bool
-    cover: BlobImage | Image
+    cover_url: str | Image
