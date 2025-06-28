@@ -298,22 +298,17 @@ files = [
 ]
 
 [[package]]
-name = "wand"
-version = "0.6.13"
-description = "Ctypes-based simple MagickWand API binding for Python"
+name = "uuid"
+version = "1.30"
+description = "UUID object and generation functions (Python 2.3 or higher)"
 optional = false
 python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "Wand-0.6.13-py2.py3-none-any.whl", hash = "sha256:e5dda0ac2204a40c29ef5c4cb310770c95d3d05c37b1379e69c94ea79d7d19c0"},
-    {file = "Wand-0.6.13.tar.gz", hash = "sha256:f5013484eaf7a20eb22d1821aaefe60b50cc329722372b5f8565d46d4aaafcca"},
+    {file = "uuid-1.30.tar.gz", hash = "sha256:1f87cc004ac5120466f36c5beae48b4c48cc411968eed0eaecd3da82aa96193f"},
 ]
-
-[package.extras]
-doc = ["Sphinx (>=5.3.0)"]
-test = ["pytest (>=7.2.0)"]
 
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "ed1af94cf8e9937c3ee8d489d8dbe3528e8c595e2c70e20b59fa1060b513dd26"
+content-hash = "023513d0e352ec84adb04261911af5d6dab884cc66e5e66ac9455742bdbca0ba"
