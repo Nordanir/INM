@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/insert.dart';
+import 'package:frontend/providers.dart';
 import 'package:frontend/superbase_config.dart';
 import 'package:frontend/widgets/login.dart';
+import 'package:provider/provider.dart';
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -38,6 +40,12 @@ class Home extends StatelessWidget {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await initSupabase();
-  runApp(const MyApp());
+  final supabaseConfig = await SupabaseConfig.initSupabase();
+  runApp(
+    MultiProvider(
+      providers: [Provider<SupabaseConfig>(create: (_) => supabaseConfig),
+        ChangeNotifierProvider<FormProvider>(create: (_) => FormProvider())],
+      child: const MyApp(),
+    ),
+  );
 }
