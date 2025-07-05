@@ -1,0 +1,16 @@
+String username = "Username";
+String password = "Password";
+String email = "E-Mail";
+String rememberMe = "Remember Me ? ";
+String loginButton = "Log me in :3";
+String signUpButton = "Sign me up :3";
+String registerButton = "Register";
+String back = "Back";
+
+String emailAlreadyInUse = "This email is already registered.";
+String invalidEmail = "Invalid email address.";
+String weakPassword = "Password is too weak (min 6 characters).";
+String loginError = "Login failed. Please check your credentials.";
+
+String succesfulRegistration = "Registration successful. Please check your email for confirmation.";
+String successfulLogin = "Login successful. Welcome back!";

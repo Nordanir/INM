@@ -1,28 +1,46 @@
 import 'package:flutter/foundation.dart';
 
-class FormProvider extends ChangeNotifier {
-  String email = "";
-  String password = "";
-  bool rememberMe = false;
+class AuthenticationProvider extends ChangeNotifier {
+  String _email = "";
+  String _password = "";
+  String _username = "";
+  bool _rememberMe = false;
+  bool _isLogin = true;
 
-  FormProvider({this.email = "", this.password = "", this.rememberMe = false});
+  get isLogin => _isLogin;
+  get email => _email;
+  get password => _password;
+  get username => _username;
+
+  AuthenticationProvider({
+    String email = "",
+    String password = "",
+    bool rememberMe = false,
+  }) : _email = email,
+       _password = password,
+       _rememberMe = rememberMe;
   void updateEmail(String newEmail) {
-    email = newEmail;
-    notifyListeners();
-  }
-
-  Future<void> init(String newEmail) async {
-    email = newEmail;
+    _email = newEmail;
     notifyListeners();
   }
 
   void updatePassword(String newPassword) {
-    password = newPassword;
+    _password = newPassword;
     notifyListeners();
   }
 
   void toggleRememberMe() {
-    rememberMe = !rememberMe;
+    _rememberMe = !_rememberMe;
+    notifyListeners();
+  }
+
+  void updateUsername(String value) {
+    _username = value;
+    notifyListeners();
+  }
+
+  void toggleLogin() {
+    _isLogin = !_isLogin;
     notifyListeners();
   }
 }

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/providers.dart';
 import 'package:frontend/superbase_config.dart';
-import 'package:frontend/widgets/login.dart';
+import 'package:frontend/widgets/auth.dart';
 import 'package:provider/provider.dart';
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -31,7 +30,7 @@ class Home extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("INM"),
       ),
-      body: Center(child: Column(children: [Login()])),
+      body: Center(child: Column(children: [Authenticate()])),
     );
   }
 }
@@ -43,8 +42,12 @@ void main() async {
   final supabaseConfig = await SupabaseConfig.initSupabase();
   runApp(
     MultiProvider(
-      providers: [Provider<SupabaseConfig>(create: (_) => supabaseConfig),
-        ChangeNotifierProvider<FormProvider>(create: (_) => FormProvider())],
+      providers: [
+        Provider<SupabaseConfig>(create: (_) => supabaseConfig),
+        ChangeNotifierProvider<AuthenticationProvider>(
+          create: (_) => AuthenticationProvider(),
+        ),
+      ],
       child: const MyApp(),
     ),
   );

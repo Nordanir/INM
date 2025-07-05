@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:frontend/constants/widget_text.dart';
+import 'package:frontend/widgets/util.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseConfig {
@@ -16,7 +19,45 @@ class SupabaseConfig {
     return SupabaseConfig(client);
   }
 
-  Future<void> signUpWithEmail(String email, String password) async {
-    await _client.auth.signUp(email: email, password: password);
+  Future<void> signUpWithEmail(
+    String email,
+    String password,
+    BuildContext context,
+  ) async {
+    try {
+      await _client.auth.signUp(email: email, password: password);
+      displayMessage(context, succesfulRegistration);
+    } on AuthApiException catch (e) {
+      displayMessage(context, _getErrorMessage(e));
+    }
+  }
+
+  Future<void> signInWithEmail(
+    String email,
+    String password,
+    BuildContext context,
+  ) async {
+    try {
+      await _client.auth.signInWithPassword(email: email, password: password);
+      displayMessage(context, successfulLogin);
+    } on AuthApiException catch (e) {
+      displayMessage(context, _getErrorMessage(e));
+    }
+  }
+
+  String _getErrorMessage(AuthApiException e) {
+    switch (e.code) {
+      case 'invalid_email':
+        return invalidEmail;
+      case 'weak_password':
+        return weakPassword;
+      case 'email_already_in_use':
+        return emailAlreadyInUse;
+      case 'invalid_credentials':
+        return loginError;
+
+      default:
+        return e.message;
+    }
   }
 }

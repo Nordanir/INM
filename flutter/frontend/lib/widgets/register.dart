@@ -3,11 +3,10 @@ import 'package:frontend/constants/widget_text.dart';
 import 'package:frontend/providers.dart';
 import 'package:frontend/superbase_config.dart';
 import 'package:frontend/widgets/inputfield.dart';
-import 'package:frontend/widgets/login_checkbox.dart';
 import 'package:provider/provider.dart';
 
-class Login extends StatelessWidget {
-  const Login({super.key});
+class Register extends StatelessWidget {
+  const Register({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -40,24 +39,24 @@ class Login extends StatelessWidget {
                   ).updatePassword(value);
                 },
               ),
-              SizedBox(height: 20),
-              LoginCheckBox(
-                label: rememberMe,
+              SizedBox(height: 15),
+              InputField(
+                title: username,
                 onChanged: (value) {
                   Provider.of<AuthenticationProvider>(
                     context,
                     listen: false,
-                  ).toggleRememberMe();
+                  ).updateUsername(value);
                 },
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 40),
 
               ElevatedButton(
                 onPressed: () async {
-                  await Provider.of<SupabaseConfig>(
+                 await Provider.of<SupabaseConfig>(
                     context,
                     listen: false,
-                  ).signInWithEmail(
+                  ).signUpWithEmail(
                     Provider.of<AuthenticationProvider>(
                       context,
                       listen: false,
@@ -66,7 +65,8 @@ class Login extends StatelessWidget {
                       context,
                       listen: false,
                     ).password,context
-                  );
+                  )
+                  ;
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(400, 50),
@@ -74,9 +74,8 @@ class Login extends StatelessWidget {
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: Text(loginButton),
+                child: Text(signUpButton),
               ),
-
               ElevatedButton(
                 onPressed: () {
                   Provider.of<AuthenticationProvider>(
@@ -90,7 +89,7 @@ class Login extends StatelessWidget {
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: Text(registerButton),
+                child: Text(back),
               ),
             ],
           ),

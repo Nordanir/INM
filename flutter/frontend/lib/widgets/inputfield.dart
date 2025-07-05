@@ -5,7 +5,8 @@ class InputField extends StatefulWidget {
   final bool obscureText;
   final ValueChanged<String>? onChanged;
 
-  InputField({
+  const InputField(
+   {
     super.key,
     this.title = "Default",
     this.obscureText = false,
