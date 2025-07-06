@@ -6,6 +6,8 @@ class AuthenticationProvider extends ChangeNotifier {
   String _username = "";
   bool _rememberMe = false;
   bool _isLogin = true;
+  bool successfulRegistration = false;
+  bool successfulLogin = false;
 
   get isLogin => _isLogin;
   get email => _email;

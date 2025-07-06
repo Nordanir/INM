@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/constants/widget_text.dart';
+import 'package:frontend/providers.dart';
 import 'package:frontend/widgets/util.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseConfig {
@@ -27,6 +29,12 @@ class SupabaseConfig {
     try {
       await _client.auth.signUp(email: email, password: password);
       displayMessage(context, succesfulRegistration);
+      Provider.of<AuthenticationProvider>(
+        context,
+        listen: false,
+      ).successfulRegistration = true;
+    } on AuthWeakPasswordException catch (_) {
+      displayMessage(context, weakPassword);
     } on AuthApiException catch (e) {
       displayMessage(context, _getErrorMessage(e));
     }
@@ -49,8 +57,6 @@ class SupabaseConfig {
     switch (e.code) {
       case 'invalid_email':
         return invalidEmail;
-      case 'weak_password':
-        return weakPassword;
       case 'email_already_in_use':
         return emailAlreadyInUse;
       case 'invalid_credentials':
