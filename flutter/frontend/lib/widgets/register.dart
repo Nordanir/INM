@@ -53,7 +53,7 @@ class Register extends StatelessWidget {
 
               ElevatedButton(
                 onPressed: () async {
-                 await Provider.of<SupabaseConfig>(
+                  await Provider.of<SupabaseConfig>(
                     context,
                     listen: false,
                   ).signUpWithEmail(
@@ -64,9 +64,18 @@ class Register extends StatelessWidget {
                     Provider.of<AuthenticationProvider>(
                       context,
                       listen: false,
-                    ).password,context
-                  )
-                  ;
+                    ).password,
+                    context,
+                  );
+                  if (Provider.of<AuthenticationProvider>(
+                    context,
+                    listen: false,
+                  ).successfulRegistration) {
+                    Provider.of<AuthenticationProvider>(
+                      context,
+                      listen: false,
+                    ).toggleLogin();
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(400, 50),

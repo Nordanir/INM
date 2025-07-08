@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/constants/app_dimension.dart';
 import 'package:frontend/providers.dart';
 import 'package:frontend/superbase_config.dart';
-import 'package:frontend/widgets/auth.dart';
+import 'package:frontend/widgets/album_provider.dart';
+import 'package:frontend/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
 
 class MyApp extends StatelessWidget {
@@ -29,8 +31,9 @@ class Home extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("INM"),
+        toolbarHeight: AppDimensions.appBarHeight(context) ,
       ),
-      body: Center(child: Column(children: [Authenticate()])),
+      body: Center(child: HomeScreen()),
     );
   }
 }
@@ -40,6 +43,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final supabaseConfig = await SupabaseConfig.initSupabase();
+  final albumProvider = AlbumProvider();
   runApp(
     MultiProvider(
       providers: [
@@ -47,6 +51,7 @@ void main() async {
         ChangeNotifierProvider<AuthenticationProvider>(
           create: (_) => AuthenticationProvider(),
         ),
+        ChangeNotifierProvider<AlbumProvider>(create: (_) => albumProvider),
       ],
       child: const MyApp(),
     ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/constants/widget_text.dart';
 import 'package:frontend/providers.dart';
+import 'package:frontend/widgets/album_provider.dart';
 import 'package:frontend/widgets/util.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -10,7 +11,6 @@ class SupabaseConfig {
   final SupabaseClient _client;
 
   SupabaseConfig(this._client);
-
   get databaseClient => _client;
   static Future<SupabaseConfig> initSupabase() async {
     await dotenv.load(fileName: ".env");
@@ -48,6 +48,10 @@ class SupabaseConfig {
     try {
       await _client.auth.signInWithPassword(email: email, password: password);
       displayMessage(context, successfulLogin);
+      Provider.of<AuthenticationProvider>(
+        context,
+        listen: false,
+      ).successfulLogin = true;
     } on AuthApiException catch (e) {
       displayMessage(context, _getErrorMessage(e));
     }
@@ -65,5 +69,11 @@ class SupabaseConfig {
       default:
         return e.message;
     }
+  }
+
+  Future<void> retrieveAlbums(BuildContext context) async {
+    final albums = await _client.from('albums').select("*");
+    print("Retrieved albums: $albums");
+    Provider.of<AlbumProvider>(context, listen: false).setAlbumsFromMap(albums);
   }
 }
