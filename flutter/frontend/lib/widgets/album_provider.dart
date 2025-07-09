@@ -1,19 +1,24 @@
-
-
 import 'package:flutter/material.dart';
-
 
 class AlbumProvider with ChangeNotifier {
   List<Album> _albums = [];
-  
+  Album? _selectedAlbum;
   List<Album> get albums => _albums;
-  
+
   set albums(List<Album> newAlbums) {
     _albums = newAlbums;
     notifyListeners(); // This is crucial for UI updates
   }
+
   List<Album> getAllAlbums() {
     return albums;
+  }
+
+  Album? get selectedAlbum => _selectedAlbum;
+
+  void changeSelectedAlbum(Album? album) {
+    _selectedAlbum = album;
+    notifyListeners();
   }
 
   void setAlbumsFromMap(List<Map<String, dynamic>> data) {
@@ -25,11 +30,11 @@ class AlbumProvider with ChangeNotifier {
           title: item['title'],
           duration: item['duration'],
           coverUrl: item['cover_url'],
-          numberOfTracks: item['number_of_tracks']
+          numberOfTracks: item['number_of_tracks'],
         ),
       );
     }
-    notifyListeners(); 
+    notifyListeners();
   }
 }
 

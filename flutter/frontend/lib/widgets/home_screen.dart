@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/app_dimension.dart';
+import 'package:frontend/constants/colors.dart';
 import 'package:frontend/superbase_config.dart';
 import 'package:frontend/widgets/album_panel.dart';
 import 'package:frontend/widgets/album_provider.dart';
+import 'package:frontend/widgets/info_panel.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -31,6 +33,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildMainContent(BuildContext context, AlbumProvider albumProvider) {
+    final selectedAlbum = Provider.of<AlbumProvider>(context).selectedAlbum;
     return SizedBox.expand(
       child: Column(
         children: [
@@ -38,8 +41,9 @@ class HomeScreen extends StatelessWidget {
             children: [
               SizedBox(
                 child: Container(
-                  color: const Color.fromRGBO(11, 206, 40, 1),
                   width: AppDimensions.sideContainerWidth(context),
+                  height: AppDimensions.sideContainerHeight(context),
+                  decoration: BoxDecoration(color: purle1),
                 ),
               ),
               Expanded(
@@ -49,22 +53,30 @@ class HomeScreen extends StatelessWidget {
                     constraints: BoxConstraints(
                       maxHeight: AppDimensions.albumListPanelHeight(context),
                     ),
-                    child: DisplayAlbums(albumProvider: albumProvider),
+                    child: Container(
+                      decoration: BoxDecoration(color: deepGreen),
+                      child: DisplayAlbums(albumProvider: albumProvider),
+                    ),
                   ),
                 ),
               ),
               SizedBox(
                 child: Container(
-                  color: const Color.fromRGBO(209, 222, 19, 1),
                   width: AppDimensions.sideContainerWidth(context),
+                  decoration: BoxDecoration(color: purle2),
+                  height: AppDimensions.sideContainerHeight(context),
+                  child: selectedAlbum != null
+                      ? InfoPanel(album: selectedAlbum)
+                      : const Placeholder(),
                 ),
               ),
             ],
           ),
           Container(
-            color: const Color.fromRGBO(200, 57, 6, 1),
-            width: double.infinity,
+            decoration: BoxDecoration(color: olive),
+            width: AppDimensions.width(context),
             height: AppDimensions.bottomBarHeight(context),
+            child: Text("data"),
           ),
         ],
       ),

@@ -12,5 +12,13 @@ String invalidEmail = "Invalid email address.";
 String weakPassword = "Password is too weak (min 6 characters).";
 String loginError = "Login failed. Please check your credentials.";
 
-String succesfulRegistration = "Registration successful. Please check your email for confirmation.";
+String succesfulRegistration =
+    "Registration successful. Please check your email for confirmation.";
 String successfulLogin = "Login successful. Welcome back!";
+
+String defaulCoverUrl =
+    "https://discussions.apple.com/content/attachment/881765040";
+
+String albumTitle = "Album Title :";
+String duration = "Duration :";
+String numOfTracks = "Number of tracks :";

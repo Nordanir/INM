@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/app_dimension.dart';
+import 'package:frontend/constants/colors.dart';
 import 'package:frontend/widgets/album_provider.dart';
+import 'package:provider/provider.dart';
 
 class AlbumCard extends StatelessWidget {
-  final String url;
-  const AlbumCard({
-    super.key,
-    this.url = "https://discussions.apple.com/content/attachment/881765040",
-  });
+  final Album album;
+  const AlbumCard({super.key, required this.album});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTap: () {
+        Provider.of<AlbumProvider>(
+          context,
+          listen: false,
+        ).changeSelectedAlbum(album);
+        album;
+      },
       child: SizedBox(
         width: AppDimensions.albumCardWidth(context),
-        child: Container(color: Colors.black, child: Image.network(url)),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: lightGreen, width: 3),
+          ),
+          child: Image.network(album.coverUrl),
+        ),
       ),
     );
   }
@@ -41,7 +52,7 @@ class DisplayAlbums extends StatelessWidget {
               final album = albumProvider.albums[index];
               return SizedBox(
                 width: AppDimensions.albumCardWidth(context),
-                child: AlbumCard(url: album.coverUrl),
+                child: AlbumCard(album: album),
               );
             },
           );
