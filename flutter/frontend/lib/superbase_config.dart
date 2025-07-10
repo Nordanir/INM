@@ -72,8 +72,16 @@ class SupabaseConfig {
   }
 
   Future<void> retrieveAlbums(BuildContext context) async {
-    final albums = await _client.from('albums').select("*");
-    print("Retrieved albums: $albums");
-    Provider.of<AlbumProvider>(context, listen: false).setAlbumsFromMap(albums);
+    final response = await _client.from('albums').select('''
+            *,
+            tracks_of_album(
+              tracks(*)
+            )
+          ''');
+    print(response);
+    Provider.of<AlbumProvider>(context, listen: false).albums =
+        (response as List).map((json) => Album.fromJson(json)).toList();
+
+    print(Provider.of<AlbumProvider>(context, listen: false).albums[0].tracks);
   }
 }

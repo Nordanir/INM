@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 class AlbumProvider with ChangeNotifier {
   List<Album> _albums = [];
   Album? _selectedAlbum;
+  List<Track> _tracks = [];
+
   List<Album> get albums => _albums;
+  List<Track> get tracks => _tracks;
 
   set albums(List<Album> newAlbums) {
     _albums = newAlbums;
@@ -20,22 +23,6 @@ class AlbumProvider with ChangeNotifier {
     _selectedAlbum = album;
     notifyListeners();
   }
-
-  void setAlbumsFromMap(List<Map<String, dynamic>> data) {
-    albums.clear();
-    for (var item in data) {
-      albums.add(
-        Album(
-          id: item['id'],
-          title: item['title'],
-          duration: item['duration'],
-          coverUrl: item['cover_url'],
-          numberOfTracks: item['number_of_tracks'],
-        ),
-      );
-    }
-    notifyListeners();
-  }
 }
 
 class Album {
@@ -44,6 +31,7 @@ class Album {
   final int duration;
   final int numberOfTracks;
   final String coverUrl;
+  final List<Track> tracks;
 
   Album({
     required this.id,
@@ -51,5 +39,50 @@ class Album {
     required this.coverUrl,
     required this.duration,
     required this.numberOfTracks,
+    required this.tracks,
   });
+  factory Album.fromJson(Map<String, dynamic> json) {
+    return Album(
+      numberOfTracks: json['number_of_tracks'],
+      id: json['id'],
+      title: json['title'],
+      duration: json['duration'],
+      coverUrl: json['cover_url'],
+      tracks:
+          (json['tracks_of_album'] as List?)
+              ?.map((j) => Track.fromJson(j['tracks']))
+              .toList() ??
+          [],
+    );
+  }
+}
+
+class Track {
+  final String id;
+  final String title;
+  final int duration;
+  final int numberOnTheAlbum;
+  final bool isALive;
+  final bool isASingle;
+
+  Track({
+    required this.id,
+    required this.title,
+    required this.duration,
+    required this.numberOnTheAlbum,
+    required this.isALive,
+    required this.isASingle,
+  });
+
+  factory Track.fromJson(Map<String, dynamic> json) {
+    return Track(
+      id: json['id'],
+      title: json['title'],
+      duration: json['duration'],
+      numberOnTheAlbum: json['no_on_the_album'],
+      isALive: json['is_a_live'],
+      isASingle: json['is_a_single'],
+    );
+    
+  }
 }

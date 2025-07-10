@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/widget_text.dart';
 import 'package:frontend/widgets/album_provider.dart';
+import 'package:frontend/widgets/display_tracks.dart';
 import 'package:frontend/widgets/util.dart';
 
 class InfoPanel extends StatelessWidget {
@@ -10,20 +11,25 @@ class InfoPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(),
-      child: Column(
-        children: [
-          DisplayText(text: album.title, label: albumTitle),
-          DisplayText(
-            label: duration,
-            text: displayDuration(timeFromSeconds(album.duration)),
-          ),
-          DisplayText(
-            label: numOfTracks,
-            text: album.numberOfTracks.toString(),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(),
+        child: Column(
+          children: [
+            DisplayText(text: album.title, label: albumTitle),
+            DisplayText(
+              label: duration,
+              text: displayDuration(timeFromSeconds(album.duration)),
+            ),
+            DisplayText(
+              label: numOfTracks,
+              text: album.numberOfTracks.toString(),
+            ),
+            DisplayTracks(album: album)
+          ],
+
+        ),
       ),
     );
   }
@@ -39,6 +45,7 @@ class DisplayText extends StatelessWidget {
       label != null ? "$label  $text" : text,
       textAlign: TextAlign.center,
       style: TextStyle(color: lightGreen),
+
     );
   }
 }

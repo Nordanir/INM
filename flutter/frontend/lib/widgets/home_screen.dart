@@ -17,6 +17,7 @@ class HomeScreen extends StatelessWidget {
         context,
         listen: false,
       ).retrieveAlbums(context);
+      
     });
 
     return Scaffold(
@@ -62,12 +63,18 @@ class HomeScreen extends StatelessWidget {
               ),
               SizedBox(
                 child: Container(
-                  width: AppDimensions.sideContainerWidth(context),
-                  decoration: BoxDecoration(color: purle2),
-                  height: AppDimensions.sideContainerHeight(context),
+                  width: AppDimensions.infoPanelWidth(context),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(
+                      AppDimensions.infoPanelBorderRadius,
+                    ),
+                    border: Border.all(color: lightGreen),
+                    color: purle2,
+                  ),
+                  height: AppDimensions.infoPanelHeight(context),
                   child: selectedAlbum != null
                       ? InfoPanel(album: selectedAlbum)
-                      : const Placeholder(),
+                      : null,
                 ),
               ),
             ],
