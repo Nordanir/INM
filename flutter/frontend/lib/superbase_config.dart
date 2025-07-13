@@ -78,10 +78,7 @@ class SupabaseConfig {
               tracks(*)
             )
           ''');
-    print(response);
     Provider.of<AlbumProvider>(context, listen: false).albums =
         (response as List).map((json) => Album.fromJson(json)).toList();
-
-    print(Provider.of<AlbumProvider>(context, listen: false).albums[0].tracks);
   }
 }

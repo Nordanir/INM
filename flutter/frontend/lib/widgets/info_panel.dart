@@ -17,18 +17,24 @@ class InfoPanel extends StatelessWidget {
         decoration: BoxDecoration(),
         child: Column(
           children: [
-            DisplayText(text: album.title, label: albumTitle),
+            DisplayText(
+              text: album.title,
+              label: albumTitle,
+              align: TextAlign.center,
+            ),
             DisplayText(
               label: duration,
               text: displayDuration(timeFromSeconds(album.duration)),
+              align: TextAlign.center,
             ),
             DisplayText(
               label: numOfTracks,
               text: album.numberOfTracks.toString(),
+              align: TextAlign.center,
             ),
-            DisplayTracks(album: album)
+            SizedBox(height: 20),
+            DisplayTracks(album: album),
           ],
-
         ),
       ),
     );
@@ -36,16 +42,23 @@ class InfoPanel extends StatelessWidget {
 }
 
 class DisplayText extends StatelessWidget {
-  const DisplayText({super.key, required this.text, this.label});
+  const DisplayText({
+    super.key,
+    required this.text,
+    this.label,
+    this.align = TextAlign.left,
+  });
   final String text;
   final String? label;
+  final TextAlign align;
   @override
   Widget build(BuildContext context) {
     return Text(
       label != null ? "$label  $text" : text,
-      textAlign: TextAlign.center,
+      textAlign: TextAlign.left,
       style: TextStyle(color: lightGreen),
-
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
     );
   }
 }

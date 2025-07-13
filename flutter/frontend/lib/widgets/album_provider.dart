@@ -4,9 +4,12 @@ class AlbumProvider with ChangeNotifier {
   List<Album> _albums = [];
   Album? _selectedAlbum;
   List<Track> _tracks = [];
+  Track? _selectedTrack;
 
   List<Album> get albums => _albums;
   List<Track> get tracks => _tracks;
+  Track? get selectedTrack => _selectedTrack;
+  Album? get selectedAlbum => _selectedAlbum;
 
   set albums(List<Album> newAlbums) {
     _albums = newAlbums;
@@ -17,11 +20,13 @@ class AlbumProvider with ChangeNotifier {
     return albums;
   }
 
-  Album? get selectedAlbum => _selectedAlbum;
-
   void changeSelectedAlbum(Album? album) {
     _selectedAlbum = album;
     notifyListeners();
+  }
+
+  void changeSelectedTrack(Track? track) {
+    _selectedTrack = track;
   }
 }
 
@@ -49,10 +54,10 @@ class Album {
       duration: json['duration'],
       coverUrl: json['cover_url'],
       tracks:
-          (json['tracks_of_album'] as List?)
-              ?.map((j) => Track.fromJson(j['tracks']))
-              .toList() ??
-          [],
+          ((json['tracks_of_album'] as List?) ?? [])
+              .map((j) => Track.fromJson(j['tracks']))
+              .toList()
+            ..sort((a, b) => a.numberOnTheAlbum.compareTo(b.numberOnTheAlbum)),
     );
   }
 }
@@ -83,6 +88,5 @@ class Track {
       isALive: json['is_a_live'],
       isASingle: json['is_a_single'],
     );
-    
   }
 }
