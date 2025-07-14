@@ -27,6 +27,7 @@ class AlbumProvider with ChangeNotifier {
 
   void changeSelectedTrack(Track? track) {
     _selectedTrack = track;
+    notifyListeners();
   }
 }
 

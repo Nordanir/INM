@@ -30,15 +30,15 @@ class AppDimensions {
 
   static Radius infoPanelBorderRadius = Radius.elliptical(10, 12);
 
-  static double trackBarWidth(context) => infoPanelWidth(context) * 0.8;
-  static double trackBarHeight(context) => infoPanelHeight(context) * .7;
+  static double tracksPanelWidth(context) => infoPanelWidth(context) * 0.8;
+  static double tracksPanelHeight(context) => infoPanelHeight(context) * .7;
 
   static double trackCardHeight() => 20;
 
   static double trackNumberPosition() => 0;
   static double trackTitlePosition() => 30;
   static double detailsButtonPosition(context) =>
-      AppDimensions.trackBarWidth(context) - 40;
+      AppDimensions.tracksPanelWidth(context) - 40;
   static double trackTitleSpan() => 100;
 
   static WidgetStateProperty<Size> get detailsButtonMinSize =>

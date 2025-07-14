@@ -4,6 +4,7 @@ import 'package:frontend/constants/widget_text.dart';
 import 'package:frontend/widgets/album_provider.dart';
 import 'package:frontend/widgets/display_tracks.dart';
 import 'package:frontend/widgets/util.dart';
+import 'package:provider/provider.dart';
 
 class InfoPanel extends StatelessWidget {
   final Album album;
@@ -11,31 +12,14 @@ class InfoPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Track? selectedTrack = Provider.of<AlbumProvider>(context).selectedTrack;
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
         decoration: BoxDecoration(),
-        child: Column(
-          children: [
-            DisplayText(
-              text: album.title,
-              label: albumTitle,
-              align: TextAlign.center,
-            ),
-            DisplayText(
-              label: duration,
-              text: displayDuration(timeFromSeconds(album.duration)),
-              align: TextAlign.center,
-            ),
-            DisplayText(
-              label: numOfTracks,
-              text: album.numberOfTracks.toString(),
-              align: TextAlign.center,
-            ),
-            SizedBox(height: 20),
-            DisplayTracks(album: album),
-          ],
-        ),
+        child: (selectedTrack == null)
+            ? TrackList(album: album)
+            : TrackInfo(track: selectedTrack),
       ),
     );
   }
@@ -59,6 +43,36 @@ class DisplayText extends StatelessWidget {
       style: TextStyle(color: lightGreen),
       overflow: TextOverflow.ellipsis,
       maxLines: 1,
+    );
+  }
+}
+
+class TrackList extends StatelessWidget {
+  const TrackList({super.key, required this.album});
+  final Album album;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        DisplayText(
+          text: album.title,
+          label: albumTitle,
+          align: TextAlign.center,
+        ),
+        DisplayText(
+          label: duration,
+          text: displayDuration(timeFromSeconds(album.duration)),
+          align: TextAlign.center,
+        ),
+        DisplayText(
+          label: numOfTracks,
+          text: album.numberOfTracks.toString(),
+          align: TextAlign.center,
+        ),
+        const SizedBox(height: 20),
+        DisplayTracks(album: album),
+      ],
     );
   }
 }

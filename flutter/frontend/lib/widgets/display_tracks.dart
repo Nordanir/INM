@@ -3,6 +3,8 @@ import 'package:frontend/constants/app_dimension.dart';
 import 'package:frontend/widgets/album_provider.dart';
 import 'package:frontend/widgets/buttons.dart';
 import 'package:frontend/widgets/info_panel.dart';
+import 'package:frontend/widgets/util.dart';
+import 'package:provider/provider.dart';
 
 class DisplayTracks extends StatelessWidget {
   final Album album;
@@ -11,8 +13,8 @@ class DisplayTracks extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: AppDimensions.trackBarHeight(context),
-      width: AppDimensions.trackBarWidth(context),
+      height: AppDimensions.tracksPanelHeight(context),
+      width: AppDimensions.tracksPanelWidth(context),
       child: Container(
         decoration: BoxDecoration(),
         child: ListView.separated(
@@ -36,7 +38,7 @@ class TrackCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: AppDimensions.trackCardHeight(),
-      width: AppDimensions.trackBarWidth(context),
+      width: AppDimensions.tracksPanelWidth(context),
       child: Stack(
         children: [
           Positioned(
@@ -50,8 +52,44 @@ class TrackCard extends StatelessWidget {
           ),
           Positioned(
             left: AppDimensions.detailsButtonPosition(context),
-            child: DetailsButton(track: track),
+            child: DetailsButton(
+              track: track,
+              onPressed: () {
+                Provider.of<AlbumProvider>(
+                  context,
+                  listen: false,
+                ).changeSelectedTrack(track);
+              },
+            ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class TrackInfo extends StatelessWidget {
+  const TrackInfo({super.key, required this.track});
+  final Track? track;
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: AppDimensions.tracksPanelWidth(context),
+      height: AppDimensions.tracksPanelHeight(context),
+      child: Column(
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              Provider.of<AlbumProvider>(
+                context,
+                listen: false,
+              ).changeSelectedTrack(null);
+            },
+            child: Icon(Icons.arrow_back),
+          ),
+          DisplayText(text: track!.title),
+          SizedBox(height: 30),
+          DisplayText(text: displayDuration(timeFromSeconds(track!.duration))),
         ],
       ),
     );
