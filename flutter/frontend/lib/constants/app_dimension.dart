@@ -45,4 +45,21 @@ class AppDimensions {
       WidgetStateProperty.all(Size(10, 10));
   static WidgetStateProperty<Size> get detailsButtonMaxSize =>
       WidgetStateProperty.all(Size(20, 20));
+
+  static WidgetStateProperty<Size> get navBarButtonMinSize =>
+      WidgetStateProperty.all(Size(90, 90));
+  static WidgetStateProperty<Size> get navBarButtonMaxSize =>
+      WidgetStateProperty.all(Size(160, 160));
+  static double navBarButtonIconSize() => 30;
+
+  static BorderRadiusGeometry navBarBorderRadius = BorderRadius.vertical(
+    top: Radius.elliptical(20, 20),
+    bottom: Radius.elliptical(20, 20),
+  );
+  static BoxConstraints navBarDimensionsConstraints(context) => BoxConstraints(
+    minWidth: AppDimensions.width(context) * .15,
+    maxWidth: AppDimensions.sideContainerWidth(context) * .5,
+    minHeight: AppDimensions.sideContainerHeight(context) * .3,
+    maxHeight: AppDimensions.sideContainerHeight(context) * .6,
+  );
 }

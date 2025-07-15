@@ -5,6 +5,7 @@ import 'package:frontend/superbase_config.dart';
 import 'package:frontend/widgets/album_panel.dart';
 import 'package:frontend/widgets/album_provider.dart';
 import 'package:frontend/widgets/info_panel.dart';
+import 'package:frontend/widgets/navbar.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -17,7 +18,6 @@ class HomeScreen extends StatelessWidget {
         context,
         listen: false,
       ).retrieveAlbums(context);
-      
     });
 
     return Scaffold(
@@ -45,6 +45,7 @@ class HomeScreen extends StatelessWidget {
                   width: AppDimensions.sideContainerWidth(context),
                   height: AppDimensions.sideContainerHeight(context),
                   decoration: BoxDecoration(color: purle1),
+                  child: NavBar(),
                 ),
               ),
               Expanded(
