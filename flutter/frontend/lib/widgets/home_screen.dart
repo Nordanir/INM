@@ -38,32 +38,22 @@ class HomeScreen extends StatelessWidget {
     return SizedBox.expand(
       child: Column(
         children: [
-          Row(
-            children: [
-              SizedBox(
-                child: Container(
+          Expanded(
+            child: Row(
+              children: [
+                Container(
                   width: AppDimensions.sideContainerWidth(context),
                   height: AppDimensions.sideContainerHeight(context),
                   decoration: BoxDecoration(color: purle1),
                   child: NavBar(),
                 ),
-              ),
-              Expanded(
-                child: SizedBox(
-                  width: AppDimensions.albumListPanelWidth(context),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: AppDimensions.albumListPanelHeight(context),
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(color: deepGreen),
-                      child: DisplayAlbums(albumProvider: albumProvider),
-                    ),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(color: deepGreen),
+                    child: DisplayAlbums(albumProvider: albumProvider),
                   ),
                 ),
-              ),
-              SizedBox(
-                child: Container(
+                Container(
                   width: AppDimensions.infoPanelWidth(context),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
@@ -77,8 +67,8 @@ class HomeScreen extends StatelessWidget {
                       ? InfoPanel(album: selectedAlbum)
                       : null,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           Container(
             decoration: BoxDecoration(color: olive),
