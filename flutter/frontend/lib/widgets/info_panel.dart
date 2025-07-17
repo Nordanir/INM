@@ -71,7 +71,9 @@ class TrackList extends StatelessWidget {
           align: TextAlign.center,
         ),
         const SizedBox(height: 20),
-        DisplayTracks(album: album),
+        (album.tracks.isNotEmpty)
+            ? DisplayTracks(album: album)
+            : DisplayText(text: "No tracks available"),
       ],
     );
   }

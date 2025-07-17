@@ -24,7 +24,12 @@ class AlbumCard extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border.all(color: lightGreen, width: 3),
           ),
-          child: Image.network(album.coverUrl),
+          child: Image.network(
+            album.coverUrl,
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(Icons.music_note);
+            },
+          ),
         ),
       ),
     );

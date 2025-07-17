@@ -6,6 +6,7 @@ import 'package:frontend/widgets/album_panel.dart';
 import 'package:frontend/widgets/album_provider.dart';
 import 'package:frontend/widgets/info_panel.dart';
 import 'package:frontend/widgets/navbar.dart';
+import 'package:frontend/widgets/search_provider.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -53,19 +54,49 @@ class HomeScreen extends StatelessWidget {
                     child: DisplayAlbums(albumProvider: albumProvider),
                   ),
                 ),
-                Container(
-                  width: AppDimensions.infoPanelWidth(context),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      AppDimensions.infoPanelBorderRadius,
-                    ),
-                    border: Border.all(color: lightGreen),
-                    color: purle2,
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        width: AppDimensions.sideContainerWidth(context),
+                        child: SearchBar(
+                          onSubmitted: (value) {
+                            Provider.of<SearchProvider>(
+                              context,
+                              listen: false,
+                            ).searchFor().then((futureAlbums) {
+                              Provider.of<AlbumProvider>(
+                                context,
+                                listen: false,
+                              ).albums = futureAlbums;
+                            });
+                          },
+                          onChanged: (value) {
+                            Provider.of<SearchProvider>(
+                              context,
+                              listen: false,
+                            ).setQuerry(value);
+                          },
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Container(
+                        width: AppDimensions.infoPanelWidth(context),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(
+                            AppDimensions.infoPanelBorderRadius,
+                          ),
+                          border: Border.all(color: lightGreen),
+                          color: purle2,
+                        ),
+                        height: AppDimensions.infoPanelHeight(context),
+                        child: selectedAlbum != null
+                            ? InfoPanel(album: selectedAlbum)
+                            : null,
+                      ),
+                    ],
                   ),
-                  height: AppDimensions.infoPanelHeight(context),
-                  child: selectedAlbum != null
-                      ? InfoPanel(album: selectedAlbum)
-                      : null,
                 ),
               ],
             ),

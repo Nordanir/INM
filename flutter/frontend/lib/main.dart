@@ -4,6 +4,7 @@ import 'package:frontend/providers.dart';
 import 'package:frontend/superbase_config.dart';
 import 'package:frontend/widgets/album_provider.dart';
 import 'package:frontend/widgets/home_screen.dart';
+import 'package:frontend/widgets/search_provider.dart';
 import 'package:provider/provider.dart';
 
 class MyApp extends StatelessWidget {
@@ -31,7 +32,7 @@ class Home extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("INM"),
-        toolbarHeight: AppDimensions.appBarHeight(context) ,
+        toolbarHeight: AppDimensions.appBarHeight(context),
       ),
       body: Center(child: HomeScreen()),
     );
@@ -52,6 +53,7 @@ void main() async {
           create: (_) => AuthenticationProvider(),
         ),
         ChangeNotifierProvider<AlbumProvider>(create: (_) => albumProvider),
+        ChangeNotifierProvider<SearchProvider>(create: (_) => SearchProvider()),
       ],
       child: const MyApp(),
     ),

@@ -6,6 +6,7 @@ class AlbumProvider with ChangeNotifier {
   List<Track> _tracks = [];
   Track? _selectedTrack;
 
+
   List<Album> get albums => _albums;
   List<Track> get tracks => _tracks;
   Track? get selectedTrack => _selectedTrack;
@@ -43,9 +44,9 @@ class Album {
     required this.id,
     required this.title,
     required this.coverUrl,
-    required this.duration,
+    this.duration = 0,
     required this.numberOfTracks,
-    required this.tracks,
+    this.tracks = const [],
   });
   factory Album.fromJson(Map<String, dynamic> json) {
     return Album(
@@ -74,7 +75,7 @@ class Track {
   Track({
     required this.id,
     required this.title,
-    required this.duration,
+    this.duration = 0,
     required this.numberOnTheAlbum,
     required this.isALive,
     required this.isASingle,

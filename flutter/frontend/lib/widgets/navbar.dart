@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/superbase_config.dart';
+import 'package:frontend/widgets/album_provider.dart';
 import 'package:frontend/widgets/buttons.dart';
+import 'package:provider/provider.dart';
 
 class NavBar extends StatelessWidget {
   const NavBar({super.key});
@@ -16,12 +19,20 @@ class NavBar extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(color: lightGreen, width: 4),
-              borderRadius: AppDimensions.navBarBorderRadius
+              borderRadius: AppDimensions.navBarBorderRadius,
             ),
             child: Column(
               children: [
                 Spacer(),
-                NavBarButton(onPressed: () {}, icon: Icons.home),
+                NavBarButton(
+                  onPressed: () {
+                    Provider.of<SupabaseConfig>(
+                      context,
+                      listen: false,
+                    ).retrieveAlbums(context);
+                  },
+                  icon: Icons.home,
+                ),
                 Spacer(),
                 NavBarButton(onPressed: () {}, icon: Icons.search),
                 Spacer(),
