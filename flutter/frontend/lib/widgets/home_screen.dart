@@ -55,7 +55,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(8),
                   child: Column(
                     children: [
                       SizedBox(
@@ -81,20 +81,8 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 10),
-                      Container(
-                        width: AppDimensions.infoPanelWidth(context),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(
-                            AppDimensions.infoPanelBorderRadius,
-                          ),
-                          border: Border.all(color: lightGreen),
-                          color: purle2,
-                        ),
-                        height: AppDimensions.infoPanelHeight(context),
-                        child: selectedAlbum != null
-                            ? InfoPanel(album: selectedAlbum)
-                            : null,
-                      ),
+                      if (selectedAlbum != null)
+                        InfoPanel(album: selectedAlbum),
                     ],
                   ),
                 ),

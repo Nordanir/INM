@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/constants/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/widget_text.dart';
+import 'package:frontend/superbase_config.dart';
 import 'package:frontend/widgets/album_provider.dart';
 import 'package:frontend/widgets/display_tracks.dart';
+import 'package:frontend/widgets/search_provider.dart';
 import 'package:frontend/widgets/util.dart';
 import 'package:provider/provider.dart';
 
@@ -14,9 +17,15 @@ class InfoPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     Track? selectedTrack = Provider.of<AlbumProvider>(context).selectedTrack;
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
       child: Container(
-        decoration: BoxDecoration(),
+        width: AppDimensions.infoPanelWidth(context),
+        height: AppDimensions.infoPanelHeight(context),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(AppDimensions.infoPanelBorderRadius),
+          border: Border.all(color: lightGreen),
+          color: purle2,
+        ),
         child: (selectedTrack == null)
             ? TrackList(album: album)
             : TrackInfo(track: selectedTrack),
@@ -71,9 +80,28 @@ class TrackList extends StatelessWidget {
           align: TextAlign.center,
         ),
         const SizedBox(height: 20),
-        (album.tracks.isNotEmpty)
-            ? DisplayTracks(album: album)
-            : DisplayText(text: "No tracks available"),
+        Expanded(
+          child: (album.tracks.isNotEmpty)
+              ? DisplayTracks(album: album)
+              : DisplayText(text: "No tracks available"),
+        ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            decoration: BoxDecoration(color: Colors.red),
+            width: AppDimensions.infoPanelWidth(context),
+            height: 50,
+            child: ElevatedButton(
+              onPressed: () {
+                Provider.of<SupabaseConfig>(
+                  context,
+                  listen: false,
+                ).addAlbumToDatabase(album);
+              },
+              child: Text("Add to library"),
+            ),
+          ),
+        ),
       ],
     );
   }

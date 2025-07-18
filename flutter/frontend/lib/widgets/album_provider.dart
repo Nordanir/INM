@@ -6,7 +6,6 @@ class AlbumProvider with ChangeNotifier {
   List<Track> _tracks = [];
   Track? _selectedTrack;
 
-
   List<Album> get albums => _albums;
   List<Track> get tracks => _tracks;
   Track? get selectedTrack => _selectedTrack;
@@ -30,16 +29,22 @@ class AlbumProvider with ChangeNotifier {
     _selectedTrack = track;
     notifyListeners();
   }
+
+
 }
 
-class Album {
+class Album with ChangeNotifier{
   final String id;
   final String title;
   final int duration;
   final int numberOfTracks;
   final String coverUrl;
-  final List<Track> tracks;
+  List<Track> tracks;
 
+void updateTracks(List<Track> newTracks) {
+    tracks = newTracks;
+    notifyListeners(); // Notify when tracks change
+  }
   Album({
     required this.id,
     required this.title,
@@ -77,8 +82,8 @@ class Track {
     required this.title,
     this.duration = 0,
     required this.numberOnTheAlbum,
-    required this.isALive,
-    required this.isASingle,
+    this.isALive = false,
+    this.isASingle = false,
   });
 
   factory Track.fromJson(Map<String, dynamic> json) {

@@ -21,6 +21,31 @@ class SupabaseConfig {
     return SupabaseConfig(client);
   }
 
+  Future<void> addAlbumToDatabase(Album album) async {
+    await _client.from('albums').insert({
+      'id': album.id,
+      'title': album.title,
+      'cover_url': album.coverUrl,
+      'number_of_tracks': album.numberOfTracks,
+      'duration': album.duration,
+    }).select();
+
+    album.tracks.forEach((track) {
+      _client.from('tracks_of_album').insert({
+        'album_id': album.id,
+        'track_id': track.id,
+      });
+      _client.from('tracks').insert({
+        'title': track.title,
+        'duration': track.duration,
+        'id': track.id,
+        'no_on_the_album': track.numberOnTheAlbum,
+        'is_a_live': track.isALive,
+        'is_a_single': track.isASingle,
+      }).select();
+    });
+  }
+
   Future<void> signUpWithEmail(
     String email,
     String password,

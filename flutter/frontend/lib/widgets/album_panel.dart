@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/widgets/album_provider.dart';
+import 'package:frontend/widgets/search_provider.dart';
 import 'package:provider/provider.dart';
 
 class AlbumCard extends StatelessWidget {
@@ -10,13 +11,15 @@ class AlbumCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final searchProvider = Provider.of<SearchProvider>(context, listen: true);
+    final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
     return GestureDetector(
-      onTap: () {
-        Provider.of<AlbumProvider>(
-          context,
-          listen: false,
-        ).changeSelectedAlbum(album);
-        album;
+      onTap: () async {
+        if (album.tracks.isEmpty) {
+          await searchProvider.retrieveSongs(album);
+          albumProvider.changeSelectedAlbum(album);
+        }
+        albumProvider.changeSelectedAlbum(album);
       },
       child: SizedBox(
         width: AppDimensions.albumCardWidth(context),

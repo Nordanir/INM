@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/superbase_config.dart';
-import 'package:frontend/widgets/album_provider.dart';
 import 'package:frontend/widgets/buttons.dart';
 import 'package:provider/provider.dart';
 
