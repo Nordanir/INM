@@ -10,7 +10,8 @@ class SearchProvider extends ChangeNotifier {
     'User-Agent': 'INM/1.0 (soosgabor0212@gmail.com)',
   };
 
-  bool _toggleSearchBarVisibility = false;
+  bool isSearching = false;
+
   final int _searchlimit = 25;
 
   final _searchCategory = "release";
@@ -19,7 +20,7 @@ class SearchProvider extends ChangeNotifier {
   final _searchBarFocusNode = FocusNode();
   FocusNode get searchFocusNode => _searchBarFocusNode;
 
-  List<dynamic> _searchResults = [];
+  final List<dynamic> _searchResults = [];
 
   List<dynamic> get searchResults => _searchResults;
 
@@ -40,7 +41,7 @@ class SearchProvider extends ChangeNotifier {
 
   List<Album> _parseRelease(List<dynamic> releases) {
     List<Album> albums = [];
-    releases.forEach((release) {
+    for (var release in releases) {
       final id = release['id'];
       final coverUrl = 'https://coverartarchive.org/release/$id/front-500.jpg';
 
@@ -50,10 +51,9 @@ class SearchProvider extends ChangeNotifier {
           title: release['title'],
           coverUrl: coverUrl,
           numberOfTracks: release['track-count'],
-          
         ),
       );
-    });
+    }
     return albums;
   }
 
@@ -75,7 +75,7 @@ class SearchProvider extends ChangeNotifier {
 
     final trackList = json['media'][0]["tracks"] as List<dynamic>;
 
-    trackList.forEach((track) {
+    for (var track in trackList) {
       tracks.add(
         Track(
           id: track['id'],
@@ -84,35 +84,8 @@ class SearchProvider extends ChangeNotifier {
           duration: track['length'],
         ),
       );
-    });
+    }
 
     return tracks;
-  }
-
-  SearchProvider() {
-    _searchBarFocusNode.addListener(() {
-      if (!_searchBarFocusNode.hasFocus) {
-        _toggleSearchBarVisibility = false;
-        notifyListeners();
-      }
-    });
-  }
-
-  bool get toggleSearchBarVisibility => _toggleSearchBarVisibility;
-
-  void toggleSearchBar() {
-    _toggleSearchBarVisibility = !_toggleSearchBarVisibility;
-    if (_toggleSearchBarVisibility) {
-      _searchBarFocusNode.requestFocus();
-    } else {
-      _searchBarFocusNode.unfocus();
-    }
-    notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _searchBarFocusNode.dispose();
-    super.dispose();
   }
 }

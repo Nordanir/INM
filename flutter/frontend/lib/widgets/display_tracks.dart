@@ -19,7 +19,7 @@ class DisplayTracks extends StatelessWidget {
         decoration: BoxDecoration(),
         child: ListView.separated(
           separatorBuilder: (context, index) => SizedBox(height: 16),
-          itemCount: album.numberOfTracks,
+          itemCount: album.tracks.length,
           scrollDirection: Axis.vertical,
           itemBuilder: (context, int index) {
             return TrackCard(track: album.tracks[index]);

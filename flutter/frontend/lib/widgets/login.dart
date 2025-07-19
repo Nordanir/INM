@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/widget_text.dart';
-import 'package:frontend/providers.dart';
+import 'package:frontend/auth_provider.dart';
 import 'package:frontend/superbase_config.dart';
 import 'package:frontend/widgets/inputfield.dart';
 import 'package:frontend/widgets/login_checkbox.dart';
@@ -11,6 +11,11 @@ class Login extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthenticationProvider>(
+      context,
+      listen: true,
+    );
+    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: true);
     return SizedBox(
       width: 300,
       height: 400,
@@ -23,10 +28,7 @@ class Login extends StatelessWidget {
               InputField(
                 title: email,
                 onChanged: (value) {
-                  Provider.of<AuthenticationProvider>(
-                    context,
-                    listen: false,
-                  ).updateEmail(value);
+                  authProvider.updateEmail(value);
                 },
               ),
               SizedBox(height: 15),
@@ -34,39 +36,25 @@ class Login extends StatelessWidget {
                 title: password,
                 obscureText: true,
                 onChanged: (value) {
-                  Provider.of<AuthenticationProvider>(
-                    context,
-                    listen: false,
-                  ).updatePassword(value);
+                  authProvider.updatePassword(value);
                 },
               ),
               SizedBox(height: 20),
               LoginCheckBox(
                 label: rememberMe,
                 onChanged: (value) {
-                  Provider.of<AuthenticationProvider>(
-                    context,
-                    listen: false,
-                  ).toggleRememberMe();
+                  authProvider.toggleRememberMe();
                 },
               ),
               SizedBox(height: 20),
 
               ElevatedButton(
                 onPressed: () async {
-                  await Provider.of<SupabaseConfig>(
-                    context,
-                    listen: false,
-                  ).signInWithEmail(
-                    Provider.of<AuthenticationProvider>(
-                      context,
-                      listen: false,
-                    ).email,
-                    Provider.of<AuthenticationProvider>(
-                      context,
-                      listen: false,
-                    ).password,context
-                  );
+                  authProvider.successfulLogin = await supabaseConfig
+                      .signInWithEmail(
+                        authProvider.email,
+                        authProvider.password,
+                      );
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(400, 50),
@@ -79,10 +67,7 @@ class Login extends StatelessWidget {
 
               ElevatedButton(
                 onPressed: () {
-                  Provider.of<AuthenticationProvider>(
-                    context,
-                    listen: false,
-                  ).toggleLogin();
+                  authProvider.toggleLogin();
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(400, 50),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/widget_text.dart';
-import 'package:frontend/providers.dart';
+import 'package:frontend/auth_provider.dart';
 import 'package:frontend/superbase_config.dart';
 import 'package:frontend/widgets/inputfield.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +10,11 @@ class Register extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: true);
+    final authProvider = Provider.of<AuthenticationProvider>(
+      context,
+      listen: true,
+    );
     return SizedBox(
       width: 300,
       height: 400,
@@ -22,10 +27,7 @@ class Register extends StatelessWidget {
               InputField(
                 title: email,
                 onChanged: (value) {
-                  Provider.of<AuthenticationProvider>(
-                    context,
-                    listen: false,
-                  ).updateEmail(value);
+                  authProvider.updateEmail(value);
                 },
               ),
               SizedBox(height: 15),
@@ -33,48 +35,27 @@ class Register extends StatelessWidget {
                 title: password,
                 obscureText: true,
                 onChanged: (value) {
-                  Provider.of<AuthenticationProvider>(
-                    context,
-                    listen: false,
-                  ).updatePassword(value);
+                  authProvider.updatePassword(value);
                 },
               ),
               SizedBox(height: 15),
               InputField(
                 title: username,
                 onChanged: (value) {
-                  Provider.of<AuthenticationProvider>(
-                    context,
-                    listen: false,
-                  ).updateUsername(value);
+                  authProvider.updateUsername(value);
                 },
               ),
               SizedBox(height: 40),
 
               ElevatedButton(
                 onPressed: () async {
-                  await Provider.of<SupabaseConfig>(
-                    context,
-                    listen: false,
-                  ).signUpWithEmail(
-                    Provider.of<AuthenticationProvider>(
-                      context,
-                      listen: false,
-                    ).email,
-                    Provider.of<AuthenticationProvider>(
-                      context,
-                      listen: false,
-                    ).password,
-                    context,
-                  );
-                  if (Provider.of<AuthenticationProvider>(
-                    context,
-                    listen: false,
-                  ).successfulRegistration) {
-                    Provider.of<AuthenticationProvider>(
-                      context,
-                      listen: false,
-                    ).toggleLogin();
+                  authProvider.successfulRegistration = await supabaseConfig
+                      .signUpWithEmail(
+                        authProvider.email,
+                        authProvider.password,
+                      );
+                  if (authProvider.successfulRegistration) {
+                    authProvider.toggleLogin();
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -87,10 +68,7 @@ class Register extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
-                  Provider.of<AuthenticationProvider>(
-                    context,
-                    listen: false,
-                  ).toggleLogin();
+                  authProvider.toggleLogin();
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(400, 50),

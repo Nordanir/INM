@@ -19,7 +19,7 @@ class InfoPanel extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
       child: Container(
-        width: AppDimensions.infoPanelWidth(context),
+        width: AppDimensions.infoPanelWidth(context) * .85,
         height: AppDimensions.infoPanelHeight(context),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(AppDimensions.infoPanelBorderRadius),
@@ -62,6 +62,8 @@ class TrackList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final searchProvider = Provider.of<SearchProvider>(context, listen: true);
+    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: true);
     return Column(
       children: [
         DisplayText(
@@ -91,14 +93,27 @@ class TrackList extends StatelessWidget {
             decoration: BoxDecoration(color: Colors.red),
             width: AppDimensions.infoPanelWidth(context),
             height: 50,
-            child: ElevatedButton(
-              onPressed: () {
-                Provider.of<SupabaseConfig>(
-                  context,
-                  listen: false,
-                ).addAlbumToDatabase(album);
-              },
-              child: Text("Add to library"),
+            child: Row(
+              children: [
+                if (searchProvider.isSearching)
+                  ElevatedButton(
+                    onPressed: () {
+                      Provider.of<SupabaseConfig>(
+                        context,
+                        listen: false,
+                      ).addAlbumToDatabase(album);
+                    },
+                    child: Text("Add to library"),
+                  ),
+
+                if (!searchProvider.isSearching)
+                  ElevatedButton(
+                    onPressed: () {
+                      supabaseConfig.removeAlbumFromDatabase(album);
+                    },
+                    child: const Text("Remove from library"),
+                  ),
+              ],
             ),
           ),
         ),

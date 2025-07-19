@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/superbase_config.dart';
+import 'package:frontend/widgets/album_provider.dart';
 import 'package:frontend/widgets/buttons.dart';
+import 'package:frontend/widgets/search_provider.dart';
 import 'package:provider/provider.dart';
 
 class NavBar extends StatelessWidget {
@@ -10,6 +12,9 @@ class NavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
+    final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
+    final searchProvider = Provider.of<SearchProvider>(context, listen: true);
     return Center(
       child: ConstrainedBox(
         constraints: AppDimensions.navBarDimensionsConstraints(context),
@@ -24,11 +29,10 @@ class NavBar extends StatelessWidget {
               children: [
                 Spacer(),
                 NavBarButton(
-                  onPressed: () {
-                    Provider.of<SupabaseConfig>(
-                      context,
-                      listen: false,
-                    ).retrieveAlbums(context);
+                  onPressed: () async {
+                    albumProvider.albums = await supabaseConfig
+                        .retrieveAlbums();
+                    searchProvider.isSearching = false;
                   },
                   icon: Icons.home,
                 ),

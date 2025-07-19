@@ -9,25 +9,26 @@ import 'package:frontend/widgets/navbar.dart';
 import 'package:frontend/widgets/search_provider.dart';
 import 'package:provider/provider.dart';
 
+
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<SupabaseConfig>(
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      Provider.of<AlbumProvider>(
         context,
         listen: false,
-      ).retrieveAlbums(context);
+      ).albums = await Provider.of<SupabaseConfig>(
+        context,
+        listen: false,
+      ).retrieveAlbums();
     });
 
     return Scaffold(
       body: Consumer<AlbumProvider>(
         builder: (context, albumProvider, _) {
-          if (albumProvider.albums.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
           return _buildMainContent(context, albumProvider);
         },
       ),
@@ -35,7 +36,8 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildMainContent(BuildContext context, AlbumProvider albumProvider) {
-    final selectedAlbum = Provider.of<AlbumProvider>(context).selectedAlbum;
+    final albumProvider = Provider.of<AlbumProvider>(context, listen: false);
+    final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     return SizedBox.expand(
       child: Column(
         children: [
@@ -62,27 +64,20 @@ class HomeScreen extends StatelessWidget {
                         width: AppDimensions.sideContainerWidth(context),
                         child: SearchBar(
                           onSubmitted: (value) {
-                            Provider.of<SearchProvider>(
-                              context,
-                              listen: false,
-                            ).searchFor().then((futureAlbums) {
-                              Provider.of<AlbumProvider>(
-                                context,
-                                listen: false,
-                              ).albums = futureAlbums;
+                            searchProvider.searchFor().then((futureAlbums) {
+                              albumProvider.albums = futureAlbums;
+                              searchProvider.isSearching = true;
+                              albumProvider.changeSelectedAlbum(null);
                             });
                           },
                           onChanged: (value) {
-                            Provider.of<SearchProvider>(
-                              context,
-                              listen: false,
-                            ).setQuerry(value);
+                            searchProvider.setQuerry(value);
                           },
                         ),
                       ),
                       SizedBox(height: 10),
-                      if (selectedAlbum != null)
-                        InfoPanel(album: selectedAlbum),
+                      if (albumProvider.selectedAlbum != null)
+                        InfoPanel(album: albumProvider.selectedAlbum!),
                     ],
                   ),
                 ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/app_dimension.dart';
-import 'package:frontend/providers.dart';
+import 'package:frontend/auth_provider.dart';
 import 'package:frontend/superbase_config.dart';
 import 'package:frontend/widgets/album_provider.dart';
 import 'package:frontend/widgets/home_screen.dart';

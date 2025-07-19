@@ -39,9 +39,10 @@ class AlbumCard extends StatelessWidget {
   }
 }
 
+
 class DisplayAlbums extends StatelessWidget {
-  late AlbumProvider albumProvider;
-  DisplayAlbums({super.key, required this.albumProvider});
+ final AlbumProvider albumProvider ;
+  const DisplayAlbums({super.key, required this.albumProvider});
 
   @override
   Widget build(BuildContext context) {

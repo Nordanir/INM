@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AlbumProvider with ChangeNotifier {
   List<Album> _albums = [];
   Album? _selectedAlbum;
-  List<Track> _tracks = [];
+  final List<Track> _tracks = [];
   Track? _selectedTrack;
 
   List<Album> get albums => _albums;
@@ -29,11 +29,9 @@ class AlbumProvider with ChangeNotifier {
     _selectedTrack = track;
     notifyListeners();
   }
-
-
 }
 
-class Album with ChangeNotifier{
+class Album with ChangeNotifier {
   final String id;
   final String title;
   final int duration;
@@ -41,10 +39,11 @@ class Album with ChangeNotifier{
   final String coverUrl;
   List<Track> tracks;
 
-void updateTracks(List<Track> newTracks) {
+  void updateTracks(List<Track> newTracks) {
     tracks = newTracks;
     notifyListeners(); // Notify when tracks change
   }
+
   Album({
     required this.id,
     required this.title,
