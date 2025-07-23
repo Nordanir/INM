@@ -15,33 +15,39 @@ class NavBar extends StatelessWidget {
     final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
     final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
     final searchProvider = Provider.of<SearchProvider>(context, listen: true);
-    return Center(
-      child: ConstrainedBox(
-        constraints: AppDimensions.navBarDimensionsConstraints(context),
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: lightGreen, width: 4),
-              borderRadius: AppDimensions.navBarBorderRadius,
-            ),
-            child: Column(
-              children: [
-                Spacer(),
-                NavBarButton(
-                  onPressed: () async {
-                    albumProvider.albums = await supabaseConfig
-                        .retrieveAlbums();
-                    searchProvider.isSearching = false;
-                  },
-                  icon: Icons.home,
-                ),
-                Spacer(),
-                NavBarButton(onPressed: () {}, icon: Icons.search),
-                Spacer(),
-                NavBarButton(onPressed: () {}, icon: Icons.settings),
-                Spacer(),
-              ],
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 500),
+      curve: Curves.bounceIn,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: AppDimensions.navBarDimensionsConstraints(context),
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: purle1.withValues(alpha: .7),
+                border: Border.all(color: lightGreen, width: 4),
+                borderRadius: AppDimensions.navBarBorderRadius,
+              ),
+              child: Column(
+                children: [
+                  Spacer(),
+                  NavBarButton(
+                    onPressed: () async {
+                      albumProvider.albums = await supabaseConfig
+                          .retrieveAlbums();
+                      searchProvider.isSearching = false;
+                      albumProvider.changeSelectedAlbum(null);
+                    },
+                    icon: Icons.home,
+                  ),
+                  Spacer(),
+                  NavBarButton(onPressed: () {}, icon: Icons.search),
+                  Spacer(),
+                  NavBarButton(onPressed: () {}, icon: Icons.settings),
+                  Spacer(),
+                ],
+              ),
             ),
           ),
         ),

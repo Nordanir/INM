@@ -89,7 +89,7 @@ class TrackInfo extends StatelessWidget {
           ),
           DisplayText(text: track!.title),
           SizedBox(height: 30),
-          DisplayText(text: displayDuration(timeFromSeconds(track!.duration))),
+          DisplayText(text: displayDuration(track!.duration)),
         ],
       ),
     );

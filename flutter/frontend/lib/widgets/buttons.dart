@@ -32,11 +32,14 @@ class NavBarButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      style: ButtonStyle(
+      style: ElevatedButton.styleFrom(
+        shape: CircleBorder(),
         minimumSize: AppDimensions.navBarButtonMinSize,
         maximumSize: AppDimensions.navBarButtonMaxSize,
-        backgroundColor: WidgetStatePropertyAll(lightGreen),
+        backgroundColor: lightGreen,
+        alignment: Alignment.center
       ),
+
       onPressed: onPressed,
       child: Icon(size: AppDimensions.navBarButtonIconSize(), icon),
     );

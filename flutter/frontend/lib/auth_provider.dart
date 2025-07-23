@@ -9,10 +9,10 @@ class AuthenticationProvider extends ChangeNotifier {
   bool successfulRegistration = false;
   bool successfulLogin = false;
 
-  get isLogin => _isLogin;
-  get email => _email;
-  get password => _password;
-  get username => _username;
+  bool get isLogin => _isLogin;
+  String get email => _email;
+  String get password => _password;
+  String get username => _username;
 
   AuthenticationProvider({
     String email = "",

@@ -1,15 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/superbase_config.dart';
 
 class AlbumProvider with ChangeNotifier {
   List<Album> _albums = [];
+  List<Album> _displayingAlbums = [];
   Album? _selectedAlbum;
   final List<Track> _tracks = [];
   Track? _selectedTrack;
 
+  List<Album> get displayingAlbums => _displayingAlbums;
   List<Album> get albums => _albums;
   List<Track> get tracks => _tracks;
   Track? get selectedTrack => _selectedTrack;
   Album? get selectedAlbum => _selectedAlbum;
+
+  //This funciton calls supabase and sends a removal request to the database
+  Future<void> deleteAlbum(Album album, SupabaseConfig supabase) async {
+    try {
+      // Delete from database first
+      await supabase.removeAlbumFromDatabase(album);
+
+      // Then remove from local state
+      _albums.removeWhere((a) => a.id == album.id);
+
+      notifyListeners(); // This will trigger UI updates
+    } catch (e) {
+      debugPrint('Error deleting album: $e');
+      rethrow;
+    }
+  }
+
+  set displayingAlbums(List<Album> albums) {
+    _displayingAlbums = albums;
+    notifyListeners();
+  }
 
   set albums(List<Album> newAlbums) {
     _albums = newAlbums;
@@ -20,6 +44,20 @@ class AlbumProvider with ChangeNotifier {
     return albums;
   }
 
+  void searchInAlbums(String? query) {
+  if (query == null || query.isEmpty) {
+    displayingAlbums = albums;
+    notifyListeners();
+    return;
+  }
+
+  final pattern = RegExp(RegExp.escape(query.toLowerCase()));
+  displayingAlbums = _albums.where((album) => 
+    pattern.hasMatch(album.title.toLowerCase())
+  ).toList();
+  notifyListeners();
+}
+
   void changeSelectedAlbum(Album? album) {
     _selectedAlbum = album;
     notifyListeners();
@@ -29,8 +67,29 @@ class AlbumProvider with ChangeNotifier {
     _selectedTrack = track;
     notifyListeners();
   }
+
+  void sortAlbumsBy(String parameter, bool isAscending) {
+    switch (parameter) {
+      case "Title":
+        displayingAlbums.sort((Album a, Album b) => a.title.compareTo(b.title));
+        break;
+      case "Duration":
+        displayingAlbums.sort((Album a, Album b) => a.duration.compareTo(b.duration));
+        break;
+      case "Number of tracks":
+        displayingAlbums.sort(
+          (Album a, Album b) => a.numberOfTracks.compareTo(b.numberOfTracks),
+        );
+        break;
+    }
+    if (isAscending == false) {
+      displayingAlbums = displayingAlbums.reversed.toList();
+    }
+    notifyListeners();
+  }
 }
 
+//Album class representing a record release in an album format
 class Album with ChangeNotifier {
   final String id;
   final String title;
@@ -52,12 +111,12 @@ class Album with ChangeNotifier {
     required this.numberOfTracks,
     this.tracks = const [],
   });
+
   factory Album.fromJson(Map<String, dynamic> json) {
     return Album(
       numberOfTracks: json['number_of_tracks'],
       id: json['id'],
       title: json['title'],
-      duration: json['duration'],
       coverUrl: json['cover_url'],
       tracks:
           ((json['tracks_of_album'] as List?) ?? [])

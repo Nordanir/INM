@@ -10,25 +10,30 @@ import 'package:frontend/widgets/util.dart';
 import 'package:provider/provider.dart';
 
 class InfoPanel extends StatelessWidget {
-  final Album album;
-  const InfoPanel({super.key, required this.album});
+  const InfoPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Track? selectedTrack = Provider.of<AlbumProvider>(context).selectedTrack;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-      child: Container(
-        width: AppDimensions.infoPanelWidth(context) * .85,
-        height: AppDimensions.infoPanelHeight(context),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(AppDimensions.infoPanelBorderRadius),
-          border: Border.all(color: lightGreen),
-          color: purle2,
+    final albumProvider = Provider.of<AlbumProvider>(context);
+    final album = albumProvider.selectedAlbum;
+
+    if (album == null) return const SizedBox.shrink();
+    return Visibility(
+      visible: albumProvider.selectedAlbum != null,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+        child: Container(
+          width: AppDimensions.infoPanelWidth(context) * .85,
+          height: AppDimensions.infoPanelHeight(context),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(AppDimensions.infoPanelBorderRadius),
+            border: Border.all(color: lightGreen),
+            color: purle2,
+          ),
+          child: (albumProvider.selectedTrack == null)
+              ? TrackList(album: album)
+              : TrackInfo(track: albumProvider.selectedTrack),
         ),
-        child: (selectedTrack == null)
-            ? TrackList(album: album)
-            : TrackInfo(track: selectedTrack),
       ),
     );
   }
@@ -63,7 +68,8 @@ class TrackList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context, listen: true);
-    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: true);
+    final supabase = Provider.of<SupabaseConfig>(context, listen: true);
+    final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
     return Column(
       children: [
         DisplayText(
@@ -73,7 +79,7 @@ class TrackList extends StatelessWidget {
         ),
         DisplayText(
           label: duration,
-          text: displayDuration(timeFromSeconds(album.duration)),
+          text: displayDuration(album.duration),
           align: TextAlign.center,
         ),
         DisplayText(
@@ -109,7 +115,7 @@ class TrackList extends StatelessWidget {
                 if (!searchProvider.isSearching)
                   ElevatedButton(
                     onPressed: () {
-                      supabaseConfig.removeAlbumFromDatabase(album);
+                      albumProvider.deleteAlbum(album, supabase);
                     },
                     child: const Text("Remove from library"),
                   ),
