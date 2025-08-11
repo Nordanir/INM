@@ -12,7 +12,7 @@ class SearchProvider extends ChangeNotifier {
 
   bool isSearching = false;
 
-  final int _searchlimit = 25;
+  final int _searchlimit = 15;
 
   final _searchCategory = "release";
   String _querry = "";
@@ -39,51 +39,80 @@ class SearchProvider extends ChangeNotifier {
     _querry = value;
   }
 
-  List<Album> _parseRelease(List<dynamic> releases) {
+  Future<List<Album>> _parseRelease(List<dynamic> releases) async {
     List<Album> albums = [];
     for (var release in releases) {
       final id = release['id'];
       final coverUrl = 'https://coverartarchive.org/release/$id/front-500.jpg';
 
-      albums.add(
-        Album(
-          id: id,
-          title: release['title'],
-          coverUrl: coverUrl,
-          numberOfTracks: release['track-count'],
+      final album = Album(
+        id: id,
+        title: release['title'],
+        coverUrl: coverUrl,
+        numberOfTracks: release['track-count'],
+        tracks: await retrieveSongs(id),
+        cover: Image.network(
+          coverUrl,
+          errorBuilder: (context, error, stackTrace) {
+            return Image(image: AssetImage('assets/default.png'));
+          },
         ),
       );
+      album.calculateAlbumDuration();
+      albums.add(album);
     }
     return albums;
   }
 
-  Future<void> retrieveSongs(Album album) async {
+  Future<List<Track>> retrieveSongs(String albumId) async {
     final response = await http.get(
       Uri.parse(
-        "https://musicbrainz.org/ws/2/release/${album.id}?inc=recordings+media&fmt=json",
+        "https://musicbrainz.org/ws/2/release/$albumId?inc=recordings+media&fmt=json",
       ),
       headers: headers,
     );
     final jsonBody = json.decode(response.body);
-
-    album.updateTracks(parseTracksFromJson(jsonBody));
     notifyListeners();
+    return parseTracksFromJson(jsonBody);
   }
 
   List<Track> parseTracksFromJson(Map<String, dynamic> json) {
     List<Track> tracks = [];
+    try {
+      final mediaList = json['media'] as List<dynamic>? ?? [];
 
-    final trackList = json['media'][0]["tracks"] as List<dynamic>;
+      if (mediaList.isNotEmpty) {
+        final media = mediaList[0] as Map<String, dynamic>;
 
-    for (var track in trackList) {
-      tracks.add(
-        Track(
-          id: track['id'],
-          title: track['title'],
-          numberOnTheAlbum: track['position'] as int,
-          duration: track['length'],
-        ),
-      );
+        final trackList = media['tracks'] as List<dynamic>? ?? [];
+
+        for (var track in trackList) {
+          try {
+            if (track is Map<String, dynamic>) {
+              final id = track['id'];
+              final title = track['title'] as String? ?? 'Unknown Track';
+              final position = track['position'] as int;
+              final length = track['length'] as int;
+
+              tracks.add(
+                Track(
+                  id: id,
+                  title: title,
+                  numberOnTheAlbum: position,
+                  duration: length,
+                ),
+              );
+            }
+          } catch (e) {
+            debugPrint('Error parsing individual track: $e');
+            continue;
+          }
+        }
+      } else {
+        debugPrint("The media list is empty");
+      }
+    } catch (e) {
+      debugPrint(e.toString());
     }
 
     return tracks;

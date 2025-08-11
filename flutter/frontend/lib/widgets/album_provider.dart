@@ -22,8 +22,8 @@ class AlbumProvider with ChangeNotifier {
 
       // Then remove from local state
       _albums.removeWhere((a) => a.id == album.id);
-
-      notifyListeners(); // This will trigger UI updates
+      _selectedAlbum = null;
+      notifyListeners();
     } catch (e) {
       debugPrint('Error deleting album: $e');
       rethrow;
@@ -45,18 +45,18 @@ class AlbumProvider with ChangeNotifier {
   }
 
   void searchInAlbums(String? query) {
-  if (query == null || query.isEmpty) {
-    displayingAlbums = albums;
-    notifyListeners();
-    return;
-  }
+    if (query == null || query.isEmpty) {
+      displayingAlbums = albums;
+      notifyListeners();
+      return;
+    }
 
-  final pattern = RegExp(RegExp.escape(query.toLowerCase()));
-  displayingAlbums = _albums.where((album) => 
-    pattern.hasMatch(album.title.toLowerCase())
-  ).toList();
-  notifyListeners();
-}
+    final pattern = RegExp(RegExp.escape(query.toLowerCase()));
+    displayingAlbums = _albums
+        .where((album) => pattern.hasMatch(album.title.toLowerCase()))
+        .toList();
+    notifyListeners();
+  }
 
   void changeSelectedAlbum(Album? album) {
     _selectedAlbum = album;
@@ -74,7 +74,9 @@ class AlbumProvider with ChangeNotifier {
         displayingAlbums.sort((Album a, Album b) => a.title.compareTo(b.title));
         break;
       case "Duration":
-        displayingAlbums.sort((Album a, Album b) => a.duration.compareTo(b.duration));
+        displayingAlbums.sort(
+          (Album a, Album b) => a.duration.compareTo(b.duration),
+        );
         break;
       case "Number of tracks":
         displayingAlbums.sort(
@@ -90,13 +92,14 @@ class AlbumProvider with ChangeNotifier {
 }
 
 //Album class representing a record release in an album format
-class Album with ChangeNotifier {
+class Album extends Entity {
   final String id;
   final String title;
-  final int duration;
+  int duration;
   final int numberOfTracks;
   final String coverUrl;
   List<Track> tracks;
+  Image? cover;
 
   void updateTracks(List<Track> newTracks) {
     tracks = newTracks;
@@ -107,13 +110,22 @@ class Album with ChangeNotifier {
     required this.id,
     required this.title,
     required this.coverUrl,
-    this.duration = 0,
     required this.numberOfTracks,
+    this.duration = 0,
     this.tracks = const [],
+    this.cover,
   });
+
+  void calculateAlbumDuration() {
+    for (Track track in tracks) {
+      duration += track.duration;
+      notifyListeners();
+    }
+  }
 
   factory Album.fromJson(Map<String, dynamic> json) {
     return Album(
+      duration: json['duration'],
       numberOfTracks: json['number_of_tracks'],
       id: json['id'],
       title: json['title'],
@@ -123,11 +135,26 @@ class Album with ChangeNotifier {
               .map((j) => Track.fromJson(j['tracks']))
               .toList()
             ..sort((a, b) => a.numberOnTheAlbum.compareTo(b.numberOnTheAlbum)),
+      cover: Image.network(
+        json['cover_url'],
+        errorBuilder: (context, error, stackTrace) {
+          return Image(image: AssetImage('assets/default.png'));
+        },
+      ),
     );
   }
 }
 
-class Track {
+class Entity with ChangeNotifier {
+  double? rating;
+
+  void updateRating(double rating) {
+    rating = rating;
+    notifyListeners();
+  }
+}
+
+class Track extends Entity {
   final String id;
   final String title;
   final int duration;

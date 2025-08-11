@@ -2,22 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/constants/widget_text.dart';
 import 'package:frontend/widgets/album_provider.dart';
-import 'package:frontend/widgets/message_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class SupabaseConfig {
+class SupabaseConfig with ChangeNotifier {
   final SupabaseClient _client;
 
   SupabaseConfig(this._client);
   SupabaseClient get databaseClient => _client;
 
-    static Future<SupabaseConfig> initSupabase() async {
-      await dotenv.load(fileName: ".env");
-      String databaseUrl = dotenv.env['DATABASE_URL'] ?? '';
+  bool? _isUserLoggedIn;
+  User loggedInUser = User();
+  Profile currentProfile = Profile();
+
+  static Future<SupabaseConfig> initSupabase() async {
+    await dotenv.load(fileName: ".env");
+    String databaseUrl = dotenv.env['DATABASE_URL'] ?? '';
     String apikey = dotenv.env['API_KEY'] ?? '';
     await Supabase.initialize(url: databaseUrl, anonKey: apikey);
     SupabaseClient client = Supabase.instance.client;
     return SupabaseConfig(client);
+  }
+
+  bool? get isUserLoggedIn => _isUserLoggedIn;
+  void successfulLogin() {
+    _isUserLoggedIn = true;
+    notifyListeners();
   }
 
   Future<void> removeAlbumFromDatabase(Album album) async {
@@ -26,34 +35,48 @@ class SupabaseConfig {
       debugPrint('Deleting relationships for album ${album.id}...');
 
       await _client
-          .from('tracks_of_album')
+          .from("entries_of_user")
           .delete()
           .eq('album_id', album.id)
-          .select('track_id') // Verify what was deleted
-          .then((res) {
-            debugPrint('Deleted ${res.length} relationships');
-            return res;
-          })
-          .catchError((e) {
-            debugPrint('Error deleting relationships: ${e.toString()}');
-            throw e;
-          });
+          .eq('profile_id', currentProfile.profileId);
 
-      // 2. Delete tracks (one by one with error handling)
-      debugPrint('Deleting ${album.tracks.length} tracks...');
-      for (final track in album.tracks) {
-        try {
-          await _client.from('tracks').delete().eq('id', track.id);
-        } catch (e) {
-          debugPrint('Error deleting track ${track.id}: $e');
-          // Continue with next track even if one fails
+      final otherEntries = await _client
+          .from("entries_of_user")
+          .select("album_id")
+          .eq('album_id', album.id);
+
+      debugPrint(otherEntries.toString());
+
+      if (otherEntries.isEmpty) {
+        await _client
+            .from('tracks_of_album')
+            .delete()
+            .eq('album_id', album.id)
+            .select('track_id') // Verify what was deleted
+            .then((res) {
+              debugPrint('Deleted ${res.length} relationships');
+              return res;
+            })
+            .catchError((e) {
+              debugPrint('Error deleting relationships: ${e.toString()}');
+              throw e;
+            });
+
+        // 2. Delete tracks (one by one with error handling)
+        debugPrint('Deleting ${album.tracks.length} tracks...');
+        for (final track in album.tracks) {
+          try {
+            await _client.from('tracks').delete().eq('id', track.id);
+          } catch (e) {
+            debugPrint('Error deleting track ${track.id}: $e');
+            // Continue with next track even if one fails
+          }
         }
+
+        // 3. Delete the album
+        debugPrint('Deleting album ${album.id}...');
+        await _client.from('albums').delete().eq('id', album.id);
       }
-
-      // 3. Delete the album
-      debugPrint('Deleting album ${album.id}...');
-      await _client.from('albums').delete().eq('id', album.id);
-
       debugPrint('Successfully deleted album and all related data');
     } catch (e) {
       debugPrint('Critical error in removeAlbumFromDatabase:');
@@ -64,42 +87,54 @@ class SupabaseConfig {
 
   Future<void> addAlbumToDatabase(Album album) async {
     try {
-      // 1. First insert the album (single operation)
-      await _client.from('albums').insert({
-        'id': album.id,
-        'title': album.title,
-        'cover_url': album.coverUrl,
-        'number_of_tracks': album.numberOfTracks,
-        'duration': album.duration,
-      });
-      debugPrint("${album.title} added into albums");
-      final trackInserts = album.tracks.map((track) {
-        debugPrint("Inserting track: ${track.title}"); // Debug statement
-        return _client.from('tracks').insert({
-          // Explicit return
-          'id': track.id,
-          'title': track.title,
-          'duration': track.duration,
-          'no_on_the_album': track.numberOnTheAlbum,
-          'is_a_live': track.isALive,
-          'is_a_single': track.isASingle,
+      final response = await _client.from('albums').select().eq("id", album.id);
+
+      if (response.toList().isEmpty) {
+        await _client.from('albums').insert({
+          'id': album.id,
+          'title': album.title,
+          'cover_url': album.coverUrl,
+          'number_of_tracks': album.numberOfTracks,
+          'duration': album.duration,
         });
-      }).toList();
+        debugPrint("${album.title} added into albums");
+        final trackInserts = album.tracks.map((track) {
+          debugPrint("Inserting track: ${track.title}");
+          return _client.from('tracks').insert({
+            // Explicit return
+            'id': track.id,
+            'title': track.title,
+            'duration': track.duration,
+            'no_on_the_album': track.numberOnTheAlbum,
+            'is_a_live': track.isALive,
+            'is_a_single': track.isASingle,
+          });
+        }).toList();
 
-      await Future.wait(trackInserts);
+        await Future.wait(trackInserts);
 
-      final relationshipInserts = album.tracks
-          .map(
-            (track) => _client.from('tracks_of_album').insert({
-              'album_id': album.id,
-              'track_id': track.id,
-            }),
-          )
-          .toList();
+        final relationshipInserts = album.tracks
+            .map(
+              (track) => _client.from('tracks_of_album').insert({
+                'album_id': album.id,
+                'track_id': track.id,
+              }),
+            )
+            .toList();
 
-      // 5. Execute all relationship inserts at once
-      await Future.wait(relationshipInserts);
-      debugPrint('Successfully added album with ${album.tracks.length} tracks');
+        // 5. Execute all relationship inserts at once
+        await Future.wait(relationshipInserts);
+
+        debugPrint(
+          'Successfully added album with ${album.tracks.length} tracks',
+        );
+      }
+
+      await _client.from('entries_of_user').insert({
+        'profile_id': currentProfile.profileId,
+        'album_id': album.id,
+      });
+      debugPrint("${album.id} was added to user ");
     } on PostgrestException catch (e) {
       if (e.code == "23505") {
         debugPrint("This entry already exists");
@@ -114,29 +149,59 @@ class SupabaseConfig {
     }
   }
 
-  Future<bool> signUpWithEmail(String email, String password) async {
+  Future<bool> signUpWithEmail(
+    String email,
+    String password,
+    String username,
+  ) async {
     try {
-      await _client.auth.signUp(email: email, password: password);
-      MessageDisplayer.setDisplay(succesfulRegistration);
+      final response = await _client.auth.signUp(
+        email: email,
+        password: password,
+      );
+      final userId = response.user!.id;
+      await _client.from('profiles').insert({
+        'username': username,
+        "user_id": userId,
+      });
       return true;
-    } on AuthWeakPasswordException catch (_) {
-      MessageDisplayer.setDisplay(weakPassword);
+    } on AuthWeakPasswordException catch (e) {
+      print(e);
       return false;
     } on AuthApiException catch (e) {
-      MessageDisplayer.setDisplay(_getErrorMessage(e));
+      print(e);
       return false;
     }
   }
 
   Future<bool> signInWithEmail(String email, String password) async {
     try {
-      await _client.auth.signInWithPassword(email: email, password: password);
-      MessageDisplayer.setDisplay(successfulLogin);
+      final response = await _client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      loggedInUser.userId = response.user!.id;
+      final profile = await _client
+          .from('profiles')
+          .select("profile_id,username")
+          .eq('user_id', loggedInUser.userId)
+          .single();
+      currentProfile.profileId = profile['profile_id'];
+      currentProfile.userName = profile['username'];
       return true;
     } on AuthApiException catch (e) {
-      MessageDisplayer.setDisplay(_getErrorMessage(e));
+      debugPrint(e.toString());
       return false;
     }
+  }
+
+  Future<void> logout() async {
+    await _client.auth.signOut();
+
+    loggedInUser.logoutUser();
+    _isUserLoggedIn = false;
+    notifyListeners();
   }
 
   String _getErrorMessage(AuthApiException e) {
@@ -154,12 +219,65 @@ class SupabaseConfig {
   }
 
   Future<List<Album>> retrieveAlbums() async {
-    final response = await _client.from('albums').select('''
+    final entriesOfProfile = await _client
+        .from("entries_of_user")
+        .select("album_id")
+        .eq("profile_id", currentProfile.profileId);
+    currentProfile._entriesOfProfile = entriesOfProfile
+        .map((entry) => entry['album_id'].toString())
+        .toList();
+
+    if (entriesOfProfile.isEmpty) {
+      debugPrint("Your database is empty");
+      return [];
+    }
+
+    final response = await _client
+        .from('albums')
+        .select('''
             *,
             tracks_of_album(
               tracks(*)
             )
-          ''');
+          ''')
+        .inFilter("id", currentProfile._entriesOfProfile);
+
     return (response as List).map((json) => Album.fromJson(json)).toList();
   }
+}
+
+class User {
+  String _userId = "";
+  String _email = "";
+  String _password = "";
+
+  String get userId => _userId;
+  String get email => _email;
+  String get password => _password;
+
+  set userId(String userId) => _userId = userId;
+  set email(String email) => _email = email;
+  set password(String password) => _password = password;
+
+  void logoutUser() {
+    userId = "";
+    email = "";
+    password = "";
+  }
+}
+
+class Profile {
+  String _profileId = "";
+  String _userName = "";
+  List<dynamic> _entriesOfProfile = [];
+
+  String get userName => _userName;
+  List<dynamic> get entriesOfProfile => _entriesOfProfile;
+  String get profileId => _profileId;
+
+  set userName(String userName) => _userName = userName;
+  set profileId(String profileId) => _profileId = profileId;
+
+  set entriesOfProfile(List<dynamic> entriesOfProfile) =>
+      _entriesOfProfile = entriesOfProfile;
 }

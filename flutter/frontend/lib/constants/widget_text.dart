@@ -2,8 +2,8 @@ String username = "Username";
 String password = "Password";
 String email = "E-Mail";
 String rememberMe = "Remember Me ? ";
-String loginButton = "Log me in :3";
-String signUpButton = "Sign me up :3";
+String loginButton = "Login";
+String signUpButton = "Sign me up";
 String registerButton = "Register";
 String back = "Back";
 

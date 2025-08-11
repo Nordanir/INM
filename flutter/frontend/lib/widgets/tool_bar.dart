@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/dimensions/content_list_dimensions.dart';
+import 'package:frontend/superbase_config.dart';
 import 'package:frontend/widgets/album_provider.dart';
+import 'package:frontend/widgets/buttons.dart';
+import 'package:frontend/widgets/search_provider.dart';
 import 'package:provider/provider.dart';
 
 class ToolBar extends StatefulWidget {
@@ -18,7 +22,8 @@ class _ToolBarState extends State<ToolBar> {
   void _toggleSortOrder() {
     setState(() => _isAscending = !_isAscending);
   }
-  void _setSortParam(String param){
+
+  void _setSortParam(String param) {
     setState(() {
       _sortParameter = param;
     });
@@ -26,22 +31,34 @@ class _ToolBarState extends State<ToolBar> {
 
   @override
   Widget build(BuildContext context) {
+    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
+    final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
+    final searchProvider = Provider.of<SearchProvider>(context, listen: true);
     return Container(
       width: double.infinity,
       height: AppDimensions.toolBarHeight(context),
-      color: purle1,
-      padding: const EdgeInsets.all(4.0),
+      color: Color(0xff5B82B5),
+      padding: const EdgeInsets.all(8.0),
       child: Row(
         children: [
-          ToolBarButton(functionality: _ChangeOrder(setParam: _setSortParam, isAscending: _isAscending)),
-          ToolBarButton(
-            functionality: _ToggleAscOrDesc(
-              sortParam: _sortParameter,
-              onToggle: _toggleSortOrder,
-              isAscending: _isAscending,
-            ),
+          _ChangeOrder(setParam: _setSortParam, isAscending: _isAscending),
+          _ToggleAscOrDesc(
+            sortParam: _sortParameter,
+            onToggle: _toggleSortOrder,
+            isAscending: _isAscending,
           ),
-          ToolBarButton(functionality: _SearchInAlbums())
+          Spacer(),
+          _SearchInAlbums(),
+          _Profile(),
+          NavBarButton(
+            onPressed: () async {
+              albumProvider.displayingAlbums = await supabaseConfig
+                  .retrieveAlbums();
+              searchProvider.isSearching = false;
+              albumProvider.changeSelectedAlbum(null);
+            },
+            icon: Icons.home,
+          ),
         ],
       ),
     );
@@ -53,77 +70,161 @@ class _ToggleAscOrDesc extends StatelessWidget {
   final VoidCallback onToggle;
   final String sortParam;
 
-  const _ToggleAscOrDesc({required this.onToggle, required this.isAscending, required this.sortParam });
+  const _ToggleAscOrDesc({
+    required this.onToggle,
+    required this.isAscending,
+    required this.sortParam,
+  });
 
   @override
   Widget build(BuildContext context) {
     final albumProvider = Provider.of<AlbumProvider>(context);
     return GestureDetector(
-      onTap: () {onToggle();albumProvider.sortAlbumsBy(sortParam, isAscending);},
-      child: Icon(isAscending ? Icons.arrow_downward : Icons.arrow_upward),
+      onTap: () {
+        onToggle();
+        albumProvider.sortAlbumsBy(sortParam, isAscending);
+      },
+      child: Container(
+        width: AppDimensions.toolBarHeight(context) * .5,
+        height: AppDimensions.toolBarHeight(context) * .5,
+        decoration: BoxDecoration(color: Color(0xff7092BE)),
+        child: Icon(isAscending ? Icons.arrow_downward : Icons.arrow_upward),
+      ),
     );
   }
 }
 
-class _ChangeOrder extends StatelessWidget {
+class _ChangeOrder extends StatefulWidget {
   final bool isAscending;
+  final Function setParam;
+  const _ChangeOrder({required this.isAscending, required this.setParam});
+
+  @override
+  State<_ChangeOrder> createState() => _ChangeOrderState();
+}
+
+class _ChangeOrderState extends State<_ChangeOrder> {
+  void setDisplayText(String text) {
+    setState(() {
+      displayText = text;
+    });
+  }
+
   final List<String> _menuItems = [
     'Title',
     'Length',
     'Release Date',
     "Number of tracks",
   ];
-  final Function setParam;
-  _ChangeOrder({required this.isAscending, required this.setParam});
-
+  String displayText = "Sort";
   @override
   Widget build(BuildContext context) {
     final albumProvider = Provider.of<AlbumProvider>(context, listen: false);
-    return PopupMenuButton<String>(
-      itemBuilder: (context) => _menuItems
-          .map((item) => PopupMenuItem(value: item, child: Text(item)))
-          .toList(),
-      onSelected: (value) {
-        setParam(value);
-        albumProvider.sortAlbumsBy(value, isAscending);
-      },
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [Text("Sort"), Icon(Icons.arrow_drop_down)],
+    return Container(
+      height: AppDimensions.toolBarHeight(context) * .5,
+      decoration: BoxDecoration(
+        border: Border(right: BorderSide(color: Color(0xff5B82B5))),
+        color: Color(0xff7092BE),
+      ),
+
+      child: PopupMenuButton<String>(
+        style: ButtonStyle(
+          backgroundColor: WidgetStatePropertyAll<Color>(secondaryBlue),
+        ),
+        color: lightBlueHighlight,
+        itemBuilder: (context) => _menuItems
+            .map((item) => PopupMenuItem(value: item, child: Text(item)))
+            .toList(),
+        onSelected: (value) {
+          widget.setParam(value);
+          albumProvider.sortAlbumsBy(value, widget.isAscending);
+          setDisplayText(value);
+        },
+        position: PopupMenuPosition.under,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [Text(displayText), Icon(Icons.arrow_drop_down)],
+          ),
         ),
       ),
     );
   }
 }
 
-class ToolBarButton extends StatelessWidget {
-  const ToolBarButton({super.key, required functionality})
-    : _functionality = functionality;
-  final Widget _functionality;
+class _SearchInAlbums extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final albumProvider = Provider.of<AlbumProvider>(context);
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.amber,
-        borderRadius: BorderRadius.all(Radius.elliptical(12, 10)),
+      height: AppDimensions.toolBarHeight(context) * .6,
+      margin: EdgeInsets.only(right: 40),
+      width: ContentListDimesions.albumListPanelWidth(context) * .4,
+      child: TextField(
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.white30,
+          suffixIcon: Icon(Icons.search),
+          hintText: "Search your library...",
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(16),
+              bottom: Radius.circular(16),
+            ),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        onSubmitted: (value) {
+          albumProvider.searchInAlbums(value);
+        },
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: SizedBox(width: 200, child: _functionality),
     );
   }
 }
 
-class _SearchInAlbums extends StatelessWidget {
+class _Profile extends StatefulWidget {
+  @override
+  State<_Profile> createState() => _ProfileState();
+}
 
+class _ProfileState extends State<_Profile> {
+  Color textColor = Colors.black;
   @override
   Widget build(BuildContext context) {
-    final albumProvider = Provider.of<AlbumProvider>(context);
-    return SearchBar(
-      onSubmitted: (value){
-        albumProvider.searchInAlbums(value);
-      },
+    final supabase = Provider.of<SupabaseConfig>(context);
+    final profile = Provider.of<SupabaseConfig>(
+      context,
+      listen: true,
+    ).currentProfile;
+    return Container(
+      decoration: BoxDecoration(),
+      width: ContentListDimesions.albumListPanelWidth(context) * .2,
+      child: MouseRegion(
+        onEnter: (_) {
+          setState(() {
+            textColor = Colors.white;
+          });
+        },
+        onExit: (_) {
+          setState(() {
+            textColor = Colors.black;
+          });
+        },
+        child: GestureDetector(
+          onTap: () {
+            supabase.logout();
+          },
+          child: Text(
+            profile.userName,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
