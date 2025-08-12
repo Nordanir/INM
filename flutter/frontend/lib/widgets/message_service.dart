@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 /*
 class MessageDisplayer {
   bool display = false;
-  BuildContext context = null;
 
   void displayMessage(
     String message, {
@@ -19,4 +18,5 @@ class MessageDisplayer {
     final displayer = MessageDisplayer();
     displayer.displayMessage(message);
   }
-}*/
+}
+*/

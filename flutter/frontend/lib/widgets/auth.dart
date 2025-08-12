@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:frontend/constants/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/widget_text.dart';
-import 'package:frontend/dimensions/info_panel_dimension.dart';
 import 'package:frontend/superbase_config.dart' show SupabaseConfig;
 import 'package:frontend/widgets/inputfield.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +24,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xff6D93c2),
       body: Consumer<SupabaseConfig>(
         builder: (context, supabase, child) {
           return Center(
@@ -108,10 +108,10 @@ class _LoginState extends State<Login> {
             backgroundColor: blue1,
             minimumSize: const Size(400, 50),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(5),
             ),
           ),
-          child: Text(loginButton),
+          child: Text(style: TextStyle(color: Colors.black), loginButton),
         ),
 
         SizedBox(height: 20),
@@ -125,10 +125,10 @@ class _LoginState extends State<Login> {
             backgroundColor: blue1,
             minimumSize: const Size(400, 50),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(5),
             ),
           ),
-          child: Text(registerButton),
+          child: Text(style: TextStyle(color: Colors.black), registerButton),
         ),
       ],
     );
@@ -197,10 +197,10 @@ class _RegisterState extends State<Register> {
             backgroundColor: blue1,
             minimumSize: const Size(400, 50),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(5),
             ),
           ),
-          child: Text(signUpButton),
+          child: Text(style: TextStyle(color: Colors.black), signUpButton),
         ),
         SizedBox(height: 20),
         ElevatedButton(
@@ -211,10 +211,10 @@ class _RegisterState extends State<Register> {
             backgroundColor: blue1,
             minimumSize: const Size(400, 50),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(5),
             ),
           ),
-          child: Text(back),
+          child: Text(style: TextStyle(color: Colors.black), back),
         ),
       ],
     );
