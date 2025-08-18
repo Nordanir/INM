@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/classes/album.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/dimensions/content_list_dimensions.dart';
-import 'package:frontend/widgets/album_provider.dart';
+import 'package:frontend/providers/album_provider.dart';
+import 'package:frontend/providers/selection_provider.dart';
 import 'package:frontend/widgets/info_panel.dart';
 import 'package:frontend/widgets/util.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +21,10 @@ class _AlbumCardState extends State<AlbumCard> {
   bool isHovered = false;
   @override
   Widget build(BuildContext context) {
-    final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
+    final selectionProvider = Provider.of<SelectionProvider>(
+      context,
+      listen: true,
+    );
     return MouseRegion(
       onEnter: (_) {
         setState(() {
@@ -32,21 +37,16 @@ class _AlbumCardState extends State<AlbumCard> {
         });
       },
       child: GestureDetector(
-        onTap: () async {
-          if (widget.album.tracks.isEmpty) {
-            albumProvider.changeSelectedAlbum(widget.album);
-          }
-          albumProvider.changeSelectedTrack(null);
-          albumProvider.changeSelectedAlbum(widget.album);
+        onTap: () {
+          selectionProvider.changeSelectedTrack(null);
+          selectionProvider.changeSelectedAlbum(widget.album);
         },
-        child: Container(
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: 200),
           padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(16),
-              bottom: Radius.circular(16),
-            ),
-            border: Border.all(color: Color(0xff6972D8), width: 3),
+            borderRadius: ContentListDimensions.albumCardBorderRadius(),
+            border: Border.all(color: grayHighLight, width: 3),
             color: isHovered ? lightBlueHighlight : blue1,
           ),
           child: Column(
@@ -54,12 +54,16 @@ class _AlbumCardState extends State<AlbumCard> {
             children: [
               Container(
                 margin: EdgeInsets.only(bottom: 10, top: 20),
-                width: ContentListDimesions.albumCardPictureWidth(context),
+                width: ContentListDimensions.albumCardPictureWidth(context),
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: Image.network(
                     widget.album.coverUrl,
                     fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const Center(child: CircularProgressIndicator());
+                    },
                     errorBuilder: (context, error, stackTrace) {
                       return Image.asset("assets/default.png");
                     },
@@ -67,7 +71,7 @@ class _AlbumCardState extends State<AlbumCard> {
                 ),
               ),
               SizedBox(
-                width: ContentListDimesions.albumCardTextBoxWidth(context),
+                width: ContentListDimensions.albumCardTextBoxWidth(context),
                 child: Center(
                   child: DisplayText(
                     text: widget.album.title,

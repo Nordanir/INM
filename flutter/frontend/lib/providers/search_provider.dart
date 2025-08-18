@@ -1,7 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:frontend/widgets/album_provider.dart';
+import 'package:frontend/classes/album.dart';
+import 'package:frontend/classes/track.dart';
 import 'package:http/http.dart' as http;
 
 class SearchProvider extends ChangeNotifier {

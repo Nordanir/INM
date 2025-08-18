@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/constants/app_dimension.dart';
+import 'package:frontend/classes/album.dart';
+import 'package:frontend/constants/colors.dart';
+import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/dimensions/content_list_dimensions.dart';
-import 'package:frontend/superbase_config.dart';
+import 'package:frontend/providers/superbase_config.dart';
 import 'package:frontend/widgets/album_panel.dart';
-import 'package:frontend/widgets/album_provider.dart';
+import 'package:frontend/providers/album_provider.dart';
 import 'package:frontend/widgets/auth.dart';
 import 'package:frontend/widgets/info_panel.dart';
 import 'package:frontend/widgets/search_bar.dart';
@@ -27,12 +29,24 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _BuildHomeScreen extends StatelessWidget {
+class _BuildHomeScreen extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    final albumProvider = Provider.of<AlbumProvider>(context, listen: false);
+  State<_BuildHomeScreen> createState() => _BuildHomeScreenState();
+}
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+class _BuildHomeScreenState extends State<_BuildHomeScreen> {
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAlbums();
+  }
+
+  Future<void> _loadAlbums() async {
+    try {
+      final albumProvider = Provider.of<AlbumProvider>(context, listen: false);
+
       albumProvider.albums = await Provider.of<SupabaseConfig>(
         context,
         listen: false,
@@ -42,13 +56,24 @@ class _BuildHomeScreen extends StatelessWidget {
       }
 
       albumProvider.displayingAlbums = albumProvider.albums;
-    });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
-    return Scaffold(body: _buildMainContent(context, albumProvider));
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _buildMainContent(context),
+    );
   }
 }
 
-Widget _buildMainContent(BuildContext context, AlbumProvider albumProvider) {
+Widget _buildMainContent(BuildContext context) {
   return SizedBox.expand(
     child: Column(
       children: [
@@ -56,37 +81,23 @@ Widget _buildMainContent(BuildContext context, AlbumProvider albumProvider) {
           child: Row(
             children: [
               SizedBox(
-                width: ContentListDimesions.albumListPanelWidth(context),
-                height: ContentListDimesions.albumListPanelHeight(context),
-                child: Stack(
-                  children: [
-                    Container(
-                      width: ContentListDimesions.albumListPanelWidth(context),
-                      height: ContentListDimesions.albumListPanelHeight(
-                        context,
-                      ),
-                      decoration: BoxDecoration(color: Color(0xff3166A8)),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: AppDimensions.toolBarHeight(context),
-                            child: ToolBar(),
-                          ),
-                          Expanded(child: DisplayAlbums()),
-                        ],
-                      ),
-                    ),
-                  ],
+                width: ContentListDimensions.albumListPanelWidth(context),
+                height: ContentListDimensions.albumListPanelHeight(context),
+                child: Container(
+                  width: ContentListDimensions.albumListPanelWidth(context),
+                  height: ContentListDimensions.albumListPanelHeight(context),
+                  decoration: BoxDecoration(color: primaryBlue),
+                  child: Column(
+                    children: [
+                      ToolBar(),
+                      Expanded(child: DisplayAlbums()),
+                    ],
+                  ),
                 ),
               ),
               Expanded(
                 child: Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xffCBDAEB),
-                    border: Border(
-                      left: BorderSide(width: 5, color: Color(0xff7092BE)),
-                    ),
-                  ),
+                  decoration: BoxDecoration(color: lightBlueHighlight),
                   width: AppDimensions.sideContainerWidth(context),
                   child: Column(
                     children: [
@@ -94,7 +105,7 @@ Widget _buildMainContent(BuildContext context, AlbumProvider albumProvider) {
                         width: AppDimensions.sideContainerWidth(context),
                         child: SearchEntryOnline(),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       InfoPanel(),
                     ],
                   ),

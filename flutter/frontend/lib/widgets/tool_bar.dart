@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/constants/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/dimensions/content_list_dimensions.dart';
-import 'package:frontend/superbase_config.dart';
-import 'package:frontend/widgets/album_provider.dart';
-import 'package:frontend/widgets/buttons.dart';
-import 'package:frontend/widgets/search_provider.dart';
+import 'package:frontend/dimensions/tool_bar_dimension.dart';
+import 'package:frontend/providers/selection_provider.dart';
+import 'package:frontend/providers/superbase_config.dart';
+import 'package:frontend/providers/album_provider.dart';
+import 'package:frontend/providers/search_provider.dart';
 import 'package:provider/provider.dart';
 
 class ToolBar extends StatefulWidget {
@@ -31,13 +31,10 @@ class _ToolBarState extends State<ToolBar> {
 
   @override
   Widget build(BuildContext context) {
-    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
-    final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
-    final searchProvider = Provider.of<SearchProvider>(context, listen: true);
     return Container(
       width: double.infinity,
-      height: AppDimensions.toolBarHeight(context),
-      color: Color(0xff5B82B5),
+      height: ToolBarDimensions.toolBarHeight(context),
+      color: lightBlueHighlight,
       padding: const EdgeInsets.all(8.0),
       child: Row(
         children: [
@@ -50,15 +47,7 @@ class _ToolBarState extends State<ToolBar> {
           Spacer(),
           _SearchInAlbums(),
           _Profile(),
-          NavBarButton(
-            onPressed: () async {
-              albumProvider.displayingAlbums = await supabaseConfig
-                  .retrieveAlbums();
-              searchProvider.isSearching = false;
-              albumProvider.changeSelectedAlbum(null);
-            },
-            icon: Icons.home,
-          ),
+          HomeButton(),
         ],
       ),
     );
@@ -85,8 +74,8 @@ class _ToggleAscOrDesc extends StatelessWidget {
         albumProvider.sortAlbumsBy(sortParam, isAscending);
       },
       child: Container(
-        width: AppDimensions.toolBarHeight(context) * .5,
-        height: AppDimensions.toolBarHeight(context) * .5,
+        width: ToolBarDimensions.toolBarHeight(context) * .5,
+        height: ToolBarDimensions.toolBarHeight(context) * .5,
         decoration: BoxDecoration(color: Color(0xff7092BE)),
         child: Icon(isAscending ? Icons.arrow_downward : Icons.arrow_upward),
       ),
@@ -121,7 +110,7 @@ class _ChangeOrderState extends State<_ChangeOrder> {
   Widget build(BuildContext context) {
     final albumProvider = Provider.of<AlbumProvider>(context, listen: false);
     return Container(
-      height: AppDimensions.toolBarHeight(context) * .5,
+      height: ToolBarDimensions.toolBarHeight(context) * .5,
       decoration: BoxDecoration(
         border: Border(right: BorderSide(color: Color(0xff5B82B5))),
         color: Color(0xff7092BE),
@@ -158,9 +147,9 @@ class _SearchInAlbums extends StatelessWidget {
   Widget build(BuildContext context) {
     final albumProvider = Provider.of<AlbumProvider>(context);
     return Container(
-      height: AppDimensions.toolBarHeight(context) * .6,
+      height: ToolBarDimensions.toolBarHeight(context) * .6,
       margin: EdgeInsets.only(right: 40),
-      width: ContentListDimesions.albumListPanelWidth(context) * .4,
+      width: ContentListDimensions.albumListPanelWidth(context) * .4,
       child: TextField(
         decoration: InputDecoration(
           filled: true,
@@ -199,7 +188,7 @@ class _ProfileState extends State<_Profile> {
     ).currentProfile;
     return Container(
       decoration: BoxDecoration(),
-      width: ContentListDimesions.albumListPanelWidth(context) * .2,
+      width: ContentListDimensions.albumListPanelWidth(context) * .2,
       child: MouseRegion(
         onEnter: (_) {
           setState(() {
@@ -225,6 +214,33 @@ class _ProfileState extends State<_Profile> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class HomeButton extends StatelessWidget {
+  const HomeButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
+    final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
+    final searchProvider = Provider.of<SearchProvider>(context, listen: true);
+    final selectionProvider = Provider.of<SelectionProvider>(context);
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        shape: CircleBorder(),
+        minimumSize: ToolBarDimensions.navBarButtonMinSize,
+        maximumSize: ToolBarDimensions.navBarButtonMaxSize,
+        backgroundColor: lightGreen,
+        alignment: Alignment.center,
+      ),
+      onPressed: () async {
+        albumProvider.displayingAlbums = await supabaseConfig.retrieveAlbums();
+        searchProvider.isSearching = false;
+        selectionProvider.changeSelectedAlbum(null);
+      },
+      child: Icon(size: ToolBarDimensions.navBarButtonIconSize(), Icons.home),
     );
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../constants/app_dimension.dart';
+import 'app_dimension.dart';
 
 class InfoPanelDimensions {
   //Info panel
@@ -40,4 +40,12 @@ class InfoPanelDimensions {
       InfoPanelDimensions.infoPanelContentWidth(context) * .5;
   static double ratingBoxHeight(BuildContext context) =>
       InfoPanelDimensions.infoPanelContentHeight(context) * .15;
+
+  static double trackInfoPanelIWitdth(BuildContext context) {
+    return infoPanelWidth(context) * .85;
+  }
+
+  static double trackInfoCoverWidth(BuildContext context) {
+    return infoPanelWidth(context) * .30;
+  }
 }

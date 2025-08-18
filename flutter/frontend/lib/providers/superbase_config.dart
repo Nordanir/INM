@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:frontend/classes/album.dart';
 import 'package:frontend/constants/widget_text.dart';
-import 'package:frontend/widgets/album_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseConfig with ChangeNotifier {
@@ -15,10 +15,10 @@ class SupabaseConfig with ChangeNotifier {
   Profile currentProfile = Profile();
 
   static Future<SupabaseConfig> initSupabase() async {
-    await dotenv.load(fileName: ".env");
-    String databaseUrl = dotenv.env['DATABASE_URL'] ?? '';
-    String apikey = dotenv.env['API_KEY'] ?? '';
-    await Supabase.initialize(url: databaseUrl, anonKey: apikey);
+    final supabaseUrl = "https://rlfmtouqiopqsaworjpf.supabase.co";
+    final anonAPIKey =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsZm10b3VxaW9wcXNhd29yanBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NjkzMDcsImV4cCI6MjA2NjM0NTMwN30.UvthMnLDJbH2ud9Cy15a5zHSGa_29hD-bLEABfM_gVs";
+    await Supabase.initialize(url: supabaseUrl, anonKey: anonAPIKey);
     SupabaseClient client = Supabase.instance.client;
     return SupabaseConfig(client);
   }
@@ -149,7 +149,7 @@ class SupabaseConfig with ChangeNotifier {
     }
   }
 
-  Future<bool> signUpWithEmail(
+  Future<(bool, String)> signUpWithEmail(
     String email,
     String password,
     String username,
@@ -164,17 +164,15 @@ class SupabaseConfig with ChangeNotifier {
         'username': username,
         "user_id": userId,
       });
-      return true;
-    } on AuthWeakPasswordException catch (e) {
-      print(e);
-      return false;
+      return (true, succesfulRegistration);
     } on AuthApiException catch (e) {
-      print(e);
-      return false;
+      return (false, _getErrorMessage(e));
+    } on AuthWeakPasswordException catch (e) {
+      return (false, weakPassword);
     }
   }
 
-  Future<bool> signInWithEmail(String email, String password) async {
+  Future<(bool, String)> signInWithEmail(String email, String password) async {
     try {
       final response = await _client.auth.signInWithPassword(
         email: email,
@@ -189,10 +187,9 @@ class SupabaseConfig with ChangeNotifier {
           .single();
       currentProfile.profileId = profile['profile_id'];
       currentProfile.userName = profile['username'];
-      return true;
+      return (true, loginSuccessfull);
     } on AuthApiException catch (e) {
-      debugPrint(e.toString());
-      return false;
+      return (false, _getErrorMessage(e));
     }
   }
 

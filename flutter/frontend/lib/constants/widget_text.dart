@@ -14,7 +14,7 @@ String loginError = "Login failed. Please check your credentials.";
 
 String succesfulRegistration =
     "Registration successful. Please check your email for confirmation.";
-String successfulLogin = "Login successful. Welcome back!";
+String loginSuccessfull = "Login successful. Welcome back!";
 
 String defaulCoverUrl =
     "https://discussions.apple.com/content/attachment/881765040";
@@ -22,3 +22,4 @@ String defaulCoverUrl =
 String albumTitle = "Album Title :";
 String duration = "Duration :";
 String numOfTracks = "Number of tracks :";
+

@@ -1,10 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/constants/app_dimension.dart';
+import 'package:frontend/classes/album.dart';
+import 'package:frontend/classes/entity.dart';
+import 'package:frontend/classes/track.dart';
+import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/widget_text.dart';
-import 'package:frontend/superbase_config.dart';
-import 'package:frontend/widgets/album_provider.dart';
-import 'package:frontend/widgets/search_provider.dart';
+import 'package:frontend/providers/selection_provider.dart';
+import 'package:frontend/providers/superbase_config.dart';
+import 'package:frontend/providers/album_provider.dart';
+import 'package:frontend/providers/search_provider.dart';
 import 'package:frontend/widgets/util.dart';
 import 'package:provider/provider.dart';
 
@@ -13,8 +18,8 @@ class InfoPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final albumProvider = Provider.of<AlbumProvider>(context);
-    final album = albumProvider.selectedAlbum;
+    final selectionProvider = Provider.of<SelectionProvider>(context);
+    final album = selectionProvider.selectedAlbum;
 
     if (album == null) return const SizedBox.shrink();
     return Container(
@@ -31,10 +36,10 @@ class InfoPanel extends StatelessWidget {
           ),
         ],
         borderRadius: BorderRadius.all(AppDimensions.infoPanelBorderRadius),
-        border: Border.all(color: Colors.black),
-        color: Color(0xffA7BFDC),
+        border: Border.all(color: black),
+        color: lightBlueHighlight,
       ),
-      child: (albumProvider.selectedTrack == null)
+      child: (selectionProvider.selectedTrack == null)
           ? TrackList(album: album)
           : TrackInfo(),
     );
@@ -59,7 +64,7 @@ class DisplayText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label != null ? "$label  $text" : text,
-      textAlign: TextAlign.left,
+      textAlign: align,
       style: TextStyle(
         fontWeight: FontWeight.w600,
         color: black,
@@ -90,7 +95,8 @@ class _TrackListState extends State<TrackList> {
 
   @override
   Widget build(BuildContext context) {
-    final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
+    final selectionProvider = Provider.of<SelectionProvider>(context);
+
     return Stack(
       children: [
         Column(
@@ -106,7 +112,7 @@ class _TrackListState extends State<TrackList> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                     ),
-                    child: albumProvider.selectedAlbum!.cover,
+                    child: selectionProvider.selectedAlbum!.cover,
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,7 +146,7 @@ class _TrackListState extends State<TrackList> {
                             InfoPanelDimensions.entryButtonHeight(context) / 2,
                       ),
                       RatingsButton(
-                        entity: albumProvider.selectedAlbum!,
+                        entity: selectionProvider.selectedAlbum!,
                         function: displayRatingBox,
                       ),
                     ],
@@ -165,7 +171,7 @@ class _TrackListState extends State<TrackList> {
                     InfoPanelDimensions.infoPanelContentWidth(context) -
                     InfoPanelDimensions.ratingBoxWidth(context),
                 top: InfoPanelDimensions.infoPanelContentHeight(context) * .2,
-                child: RatingBox(entity: albumProvider.selectedAlbum!),
+                child: RatingBox(entity: selectionProvider.selectedAlbum!),
               )
             : SizedBox.shrink(),
       ],
@@ -206,7 +212,7 @@ class _TrackCardState extends State<TrackCard> {
   bool isHovered = false;
   @override
   Widget build(BuildContext context) {
-    final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
+    final selectionProvider = Provider.of<SelectionProvider>(context);
     return MouseRegion(
       onEnter: (_) => {
         setState(() {
@@ -221,10 +227,11 @@ class _TrackCardState extends State<TrackCard> {
       },
       child: GestureDetector(
         onTap: () {
-          albumProvider.changeSelectedTrack(widget.track);
+          selectionProvider.changeSelectedTrack(widget.track);
         },
 
-        child: Container(
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: 200),
           decoration: BoxDecoration(
             color: isHovered ? primaryBlue : Color(0xffA7BFDC),
             boxShadow: [
@@ -266,23 +273,24 @@ class TrackInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
-    final track = albumProvider.selectedTrack!;
-    final album = albumProvider.selectedAlbum!;
+    final selectionProvider = Provider.of<SelectionProvider>(context);
+
+    final track = selectionProvider.selectedTrack!;
+    final album = selectionProvider.selectedAlbum!;
     return Container(
-      width: InfoPanelDimensions.infoPanelWidth(context) * .85,
+      width: InfoPanelDimensions.trackInfoPanelIWitdth(context),
       height: InfoPanelDimensions.infoPanelHeight(context),
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Color(0xff7092BE).withValues(alpha: 0.7),
+            color: deepBlueHighLight.withValues(alpha: 0.7),
             spreadRadius: 5,
             blurRadius: 1,
             offset: Offset(-3, 3), // changes position of shadow
           ),
         ],
         borderRadius: BorderRadius.all(AppDimensions.infoPanelBorderRadius),
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: black),
         color: lightBlueHighlight,
       ),
       child: Column(
@@ -291,15 +299,15 @@ class TrackInfo extends StatelessWidget {
           Column(
             children: [
               DisplayText(text: track.title),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
               DisplayText(
                 text: "${album.title} - ${track.numberOnTheAlbum}. track",
               ),
             ],
           ),
-          SizedBox(height: 15),
+          const SizedBox(height: 15),
           Divider(thickness: 4, color: deepBlueHighLight),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -311,8 +319,8 @@ class TrackInfo extends StatelessWidget {
                 decoration: BoxDecoration(
                   border: Border.all(color: deepBlueHighLight, width: 1),
                 ),
-                width: InfoPanelDimensions.infoPanelWidth(context) * .30,
-                height: InfoPanelDimensions.infoPanelWidth(context) * .30,
+                width: InfoPanelDimensions.trackInfoCoverWidth(context),
+                height: InfoPanelDimensions.trackInfoCoverWidth(context),
                 child: album.cover,
               ),
               Column(
@@ -344,6 +352,7 @@ class AddOrRemoveEntryButton extends StatelessWidget {
     final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
     final searchProvider = Provider.of<SearchProvider>(context, listen: true);
     final supabase = Provider.of<SupabaseConfig>(context, listen: true);
+    final selectionProvider = Provider.of<SelectionProvider>(context);
 
     return SizedBox(
       width: InfoPanelDimensions.entryButtonWidth(context),
@@ -366,14 +375,18 @@ class AddOrRemoveEntryButton extends StatelessWidget {
           alignment: Alignment.center,
           padding: WidgetStatePropertyAll(EdgeInsets.zero),
         ),
-        onPressed: () {
+        onPressed: () async {
           if (searchProvider.isSearching) {
             Provider.of<SupabaseConfig>(
               context,
               listen: false,
-            ).addAlbumToDatabase(albumProvider.selectedAlbum!);
+            ).addAlbumToDatabase(selectionProvider.selectedAlbum!);
           } else {
-            albumProvider.deleteAlbum(albumProvider.selectedAlbum!, supabase);
+            await albumProvider.deleteAlbum(
+              selectionProvider.selectedAlbum!,
+              supabase,
+            );
+            selectionProvider.changeSelectedAlbum(null);
           }
         },
         child: (searchProvider.isSearching)
@@ -389,7 +402,7 @@ class CloseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final albumProvider = Provider.of<AlbumProvider>(context);
+    final selectionProvider = Provider.of<SelectionProvider>(context);
     return Align(
       alignment: Alignment.topLeft,
       child: Container(
@@ -406,7 +419,7 @@ class CloseButton extends StatelessWidget {
         child: IconButton(
           style: IconButton.styleFrom(padding: EdgeInsets.zero),
           onPressed: () {
-            albumProvider.changeSelectedTrack(null);
+            selectionProvider.changeSelectedTrack(null);
           },
           hoverColor: Colors.transparent,
           highlightColor: Colors.transparent,
@@ -486,7 +499,6 @@ class RatingBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final albumProvider = Provider.of<AlbumProvider>(context);
     return Container(
       padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
       width: InfoPanelDimensions.ratingBoxWidth(context),

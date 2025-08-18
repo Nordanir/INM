@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-export '../dimensions/info_panel_dimension.dart';
+export 'info_panel_dimension.dart';
 
 class AppDimensions {
   static Size _size(BuildContext context) => MediaQuery.of(context).size;
@@ -8,7 +8,6 @@ class AppDimensions {
   static double width(BuildContext context) => _size(context).width;
   static double height(BuildContext context) => _size(context).height;
 
-  static double toolBarHeight(BuildContext context) => height(context) * .080;
 
   static double sideContainerWidth(BuildContext context) =>
       width(context) * 0.3;
@@ -33,10 +32,6 @@ class AppDimensions {
       WidgetStateProperty.all(Size(10, 10));
   static WidgetStateProperty<Size> get detailsButtonMaxSize =>
       WidgetStateProperty.all(Size(20, 20));
-
-  static Size get navBarButtonMinSize => Size(60, 60);
-  static Size get navBarButtonMaxSize => Size(120, 120);
-  static double navBarButtonIconSize() => 20;
 
   static BorderRadiusGeometry navBarBorderRadius = BorderRadius.vertical(
     top: Radius.elliptical(20, 20),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/constants/app_dimension.dart';
-import 'package:frontend/widgets/album_provider.dart';
-import 'package:frontend/widgets/search_provider.dart';
+import 'package:frontend/constants/colors.dart';
+import 'package:frontend/dimensions/app_dimension.dart';
+import 'package:frontend/providers/album_provider.dart';
+import 'package:frontend/providers/search_provider.dart';
+import 'package:frontend/providers/selection_provider.dart';
 import 'package:provider/provider.dart';
 
 class SearchEntryOnline extends StatelessWidget {
@@ -11,13 +13,14 @@ class SearchEntryOnline extends StatelessWidget {
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     final albumProvider = Provider.of<AlbumProvider>(context);
+    final selectionProvider = Provider.of<SelectionProvider>(context);
     return Container(
       margin: EdgeInsets.only(top: 15),
       height: AppDimensions.sideContainerHeight(context) * .1,
       child: TextField(
         decoration: InputDecoration(
           filled: true,
-          fillColor: Color(0xff6972D8),
+          fillColor: deepBlueHighLight,
           suffixIcon: Icon(Icons.public),
           hintText: "Search online...",
           border: OutlineInputBorder(
@@ -28,12 +31,13 @@ class SearchEntryOnline extends StatelessWidget {
             borderSide: BorderSide.none,
           ),
         ),
-        onSubmitted: (value) {
-          searchProvider.searchFor().then((futureAlbums) {
-            albumProvider.displayingAlbums = futureAlbums;
-            searchProvider.isSearching = true;
-            albumProvider.changeSelectedAlbum(null);
-          });
+        onSubmitted: (value) async {
+          if (value.isEmpty) return;
+
+          final albums = await searchProvider.searchFor();
+          albumProvider.displayingAlbums = albums;
+          searchProvider.isSearching = true;
+          selectionProvider.changeSelectedAlbum(null);
         },
         onChanged: (value) {
           searchProvider.setQuerry(value);
