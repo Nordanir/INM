@@ -47,7 +47,7 @@ class _AlbumCardState extends State<AlbumCard> {
           decoration: BoxDecoration(
             borderRadius: ContentListDimensions.albumCardBorderRadius(),
             border: Border.all(color: grayHighLight, width: 3),
-            color: isHovered ? lightBlueHighlight : blue1,
+            color: isHovered ? lightBlueHighlight : grayGreen,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,

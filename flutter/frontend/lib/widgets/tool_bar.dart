@@ -32,18 +32,24 @@ class _ToolBarState extends State<ToolBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
+      width: ToolBarDimensions.toolBarWidth(context),
       height: ToolBarDimensions.toolBarHeight(context),
-      color: lightBlueHighlight,
+      margin: EdgeInsets.only(top: 20, bottom: 10),
+      decoration: BoxDecoration(
+        color: lightBlueHighlight,
+        borderRadius: ToolBarDimensions.toolBarBorderRadius(),
+      ),
       padding: const EdgeInsets.all(8.0),
       child: Row(
         children: [
-          _ChangeOrder(setParam: _setSortParam, isAscending: _isAscending),
           _ToggleAscOrDesc(
             sortParam: _sortParameter,
             onToggle: _toggleSortOrder,
             isAscending: _isAscending,
           ),
+
+          _ChangeOrder(setParam: _setSortParam, isAscending: _isAscending),
+
           Spacer(),
           _SearchInAlbums(),
           _Profile(),
@@ -74,9 +80,16 @@ class _ToggleAscOrDesc extends StatelessWidget {
         albumProvider.sortAlbumsBy(sortParam, isAscending);
       },
       child: Container(
+        margin: EdgeInsets.only(left: 16),
         width: ToolBarDimensions.toolBarHeight(context) * .5,
         height: ToolBarDimensions.toolBarHeight(context) * .5,
-        decoration: BoxDecoration(color: Color(0xff7092BE)),
+        decoration: BoxDecoration(
+          color: deepBlueHighLight,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(8),
+            bottomLeft: Radius.circular(8),
+          ),
+        ),
         child: Icon(isAscending ? Icons.arrow_downward : Icons.arrow_upward),
       ),
     );
@@ -112,6 +125,10 @@ class _ChangeOrderState extends State<_ChangeOrder> {
     return Container(
       height: ToolBarDimensions.toolBarHeight(context) * .5,
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(8),
+          bottomRight: Radius.circular(8),
+        ),
         border: Border(right: BorderSide(color: Color(0xff5B82B5))),
         color: Color(0xff7092BE),
       ),
@@ -134,7 +151,10 @@ class _ChangeOrderState extends State<_ChangeOrder> {
           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: [Text(displayText), Icon(Icons.arrow_drop_down)],
+            children: [
+              Text(style: TextStyle(fontSize: 12), displayText),
+              Icon(Icons.arrow_drop_down),
+            ],
           ),
         ),
       ),

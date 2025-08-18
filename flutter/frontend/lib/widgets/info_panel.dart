@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/classes/album.dart';
 import 'package:frontend/classes/entity.dart';
@@ -409,7 +408,7 @@ class CloseButton extends StatelessWidget {
         padding: EdgeInsets.zero,
         decoration: BoxDecoration(
           border: Border(
-            bottom: BorderSide(color: Colors.black),
+            bottom: BorderSide(color: black),
             right: BorderSide(color: black),
           ),
           borderRadius: BorderRadius.only(bottomRight: Radius.elliptical(4, 8)),
