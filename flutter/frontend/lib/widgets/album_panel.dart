@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/classes/album.dart';
+import 'package:frontend/constants/assets.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/dimensions/content_list_dimensions.dart';
 import 'package:frontend/providers/album_provider.dart';
 import 'package:frontend/providers/selection_provider.dart';
@@ -43,18 +45,25 @@ class _AlbumCardState extends State<AlbumCard> {
         },
         child: AnimatedContainer(
           duration: Duration(milliseconds: 200),
-          padding: EdgeInsets.all(10),
+          padding: AppDimensions.smallPadding,
           decoration: BoxDecoration(
+            boxShadow: [AppDimensions.containershadow],
             borderRadius: ContentListDimensions.albumCardBorderRadius(),
-            border: Border.all(color: grayHighLight, width: 3),
-            color: isHovered ? lightBlueHighlight : grayGreen,
+            border: Border.all(color: black, width: AppDimensions.outlineWidth),
+            color: isHovered ? accent : lightBlueHighlight,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                margin: EdgeInsets.only(bottom: 10, top: 20),
+                margin: EdgeInsets.only(bottom: AppDimensions.smallSpacing, top: AppDimensions.normalSpacing(context)),
                 width: ContentListDimensions.albumCardPictureWidth(context),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: black,
+                    width: AppDimensions.outlineWidth,
+                  ),
+                ),
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: Image.network(
@@ -65,7 +74,7 @@ class _AlbumCardState extends State<AlbumCard> {
                       return const Center(child: CircularProgressIndicator());
                     },
                     errorBuilder: (context, error, stackTrace) {
-                      return Image.asset("assets/default.png");
+                      return Image.asset(defaultCoverPath);
                     },
                   ),
                 ),
@@ -106,21 +115,18 @@ class DisplayAlbums extends StatelessWidget {
         if (albumProvider.displayingAlbums.isEmpty) {
           return const Center(child: Text("No albums found :("));
         } else {
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 5,
-                childAspectRatio: .75, // Adjusted for rectangular cards
-                crossAxisSpacing: 16, // Increased spacing
-                mainAxisSpacing: 16, // Increased spacing
-              ),
-              scrollDirection: Axis.vertical,
-              itemCount: albumProvider.displayingAlbums.length,
-              itemBuilder: (context, index) {
-                return AlbumCard(album: albumProvider.displayingAlbums[index]);
-              },
+          return GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 5,
+              childAspectRatio: .80, // Adjusted for rectangular cards
+              crossAxisSpacing: 16, // Increased spacing
+              mainAxisSpacing: 16, // Increased spacing
             ),
+            scrollDirection: Axis.vertical,
+            itemCount: albumProvider.displayingAlbums.length,
+            itemBuilder: (context, index) {
+              return AlbumCard(album: albumProvider.displayingAlbums[index]);
+            },
           );
         }
       },

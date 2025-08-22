@@ -4,7 +4,7 @@ import 'package:frontend/dimensions/content_list_dimensions.dart';
 
 class ToolBarDimensions {
   static double toolBarWidth(BuildContext context) {
-    return ContentListDimensions.albumListPanelWidth(context) * .95;
+    return ContentListDimensions.albumListPanelWidth(context);
   }
 
   static double toolBarHeight(BuildContext context) =>
@@ -13,6 +13,10 @@ class ToolBarDimensions {
   static Size get navBarButtonMinSize => Size(60, 60);
   static Size get navBarButtonMaxSize => Size(120, 120);
   static double navBarButtonIconSize() => 20;
+
+  static double toolBarSearchBarHeight(BuildContext context) {
+    return toolBarHeight(context) * .6;
+  }
 
   static BorderRadius toolBarBorderRadius() {
     return BorderRadius.vertical(

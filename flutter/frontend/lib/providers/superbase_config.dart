@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:frontend/classes/album.dart';
 import 'package:frontend/constants/widget_text.dart';
@@ -9,6 +10,8 @@ class SupabaseConfig with ChangeNotifier {
 
   SupabaseConfig(this._client);
   SupabaseClient get databaseClient => _client;
+
+  final storage = FlutterSecureStorage();
 
   bool? _isUserLoggedIn;
   User loggedInUser = User();
@@ -187,6 +190,8 @@ class SupabaseConfig with ChangeNotifier {
           .single();
       currentProfile.profileId = profile['profile_id'];
       currentProfile.userName = profile['username'];
+      _isUserLoggedIn = true;
+      notifyListeners();
       return (true, loginSuccessfull);
     } on AuthApiException catch (e) {
       return (false, _getErrorMessage(e));
@@ -198,7 +203,28 @@ class SupabaseConfig with ChangeNotifier {
 
     loggedInUser.logoutUser();
     _isUserLoggedIn = false;
+    storage.delete(key: "email");
+    storage.delete(key: 'password');
     notifyListeners();
+  }
+
+  Future<void> storeCredentials(String email, String password) async {
+    await storage.write(key: 'email', value: email);
+    await storage.write(key: 'password', value: password);
+  }
+
+  Future<bool> isKeptLogin() async {
+    final email = await storage.read(key: 'email');
+    final password = await storage.read(key: 'password');
+
+    if (email == null || password == null) {
+      return false;
+    } else {
+      signInWithEmail(email, password);
+      _isUserLoggedIn = true;
+      notifyListeners();
+      return true;
+    }
   }
 
   String _getErrorMessage(AuthApiException e) {

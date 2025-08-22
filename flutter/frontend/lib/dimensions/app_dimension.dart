@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/constants/colors.dart';
 
 export 'info_panel_dimension.dart';
 
@@ -8,14 +9,10 @@ class AppDimensions {
   static double width(BuildContext context) => _size(context).width;
   static double height(BuildContext context) => _size(context).height;
 
-
   static double sideContainerWidth(BuildContext context) =>
-      width(context) * 0.3;
+      width(context) * 0.28;
   static double sideContainerHeight(BuildContext context) =>
       height(context) - bottomBarHeight(context) - appBarHeight(context);
-
-
- 
 
   static double bottomBarHeight(BuildContext context) => height(context) * 0.05;
   static double appBarHeight(BuildContext context) => height(context) * 0.05;
@@ -47,4 +44,40 @@ class AppDimensions {
       );
 
   static Size minWindowSize() => Size(1550, 850);
+
+  static const double smallFontSize = 8;
+  static const double normalFontSize = 16;
+  static const double emphasizedFontSize = 24;
+
+  static double normalFontWeight = 1;
+  static double emphasizedFontWeight = 1;
+
+  static EdgeInsets smallPadding = EdgeInsets.all(8);
+  static EdgeInsets normalPadding = EdgeInsets.all(16);
+  static EdgeInsets largePadding(BuildContext context) {
+    return width(context) < 1700 ? EdgeInsets.all(20) : EdgeInsets.all(24);
+  }
+
+  static double smallSpacing = 8;
+  static double normalSpacing(BuildContext context) {
+    return width(context) < 1700 ? 12 : 16;
+  }
+
+  static double largeSpacing(BuildContext context) {
+    return width(context) < 1700 ? 20 : 24;
+  }
+
+  static double outlineWidth = 1;
+  static double narrowBorderWidth = 4;
+  static double wideBorderWidth = 8;
+
+  static const FontWeight normalWeight = FontWeight.w600;
+  static const FontWeight emphasizedWeight = FontWeight.w900;
+
+  static BoxShadow containershadow = BoxShadow(
+    color: deepBlueHighLight.withValues(alpha: 0.5),
+    spreadRadius: 5,
+    blurRadius: 1,
+    offset: Offset(-2, 2), // changes position of shadow
+  );
 }

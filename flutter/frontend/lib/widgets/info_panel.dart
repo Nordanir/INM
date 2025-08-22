@@ -26,14 +26,7 @@ class InfoPanel extends StatelessWidget {
       width: InfoPanelDimensions.infoPanelWidth(context),
       height: InfoPanelDimensions.infoPanelHeight(context),
       decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: Color(0xff7092BE).withValues(alpha: 0.7),
-            spreadRadius: 5,
-            blurRadius: 1,
-            offset: Offset(-3, 3), // changes position of shadow
-          ),
-        ],
+        boxShadow: [AppDimensions.containershadow],
         borderRadius: BorderRadius.all(AppDimensions.infoPanelBorderRadius),
         border: Border.all(color: black),
         color: lightBlueHighlight,
@@ -51,7 +44,7 @@ class DisplayText extends StatelessWidget {
     required this.text,
     this.label,
     this.align = TextAlign.left,
-    this.textsize = 18,
+    this.textsize = AppDimensions.normalFontSize,
     this.letterSpacing = 1.5,
   });
   final String text;
@@ -64,16 +57,20 @@ class DisplayText extends StatelessWidget {
     return Text(
       label != null ? "$label  $text" : text,
       textAlign: align,
-      style: TextStyle(
-        fontWeight: FontWeight.w600,
-        color: black,
-        fontSize: textsize,
-        fontFamily: "Inconsolata",
-      ),
+      style: textStyle(textsize),
       overflow: TextOverflow.ellipsis,
       maxLines: 1,
     );
   }
+}
+
+TextStyle textStyle(double textsize) {
+  return TextStyle(
+    fontWeight: AppDimensions.normalWeight,
+    color: black,
+    fontSize: textsize,
+    fontFamily: "Inconsolata",
+  );
 }
 
 class TrackList extends StatefulWidget {
@@ -109,7 +106,7 @@ class _TrackListState extends State<TrackList> {
                     width: InfoPanelDimensions.infoPanelHeight(context) * .15,
                     margin: EdgeInsets.only(right: 10),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                      border: Border.all(width: AppDimensions.outlineWidth),
                     ),
                     child: selectionProvider.selectedAlbum!.cover,
                   ),
@@ -117,10 +114,12 @@ class _TrackListState extends State<TrackList> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ScrollableText(
+                        textSize: AppDimensions.emphasizedFontSize,
                         text: widget.album.title,
                         areaWidth: InfoPanelDimensions.scrollableTitleWidth(
                           context,
                         ),
+                        fontWeight: AppDimensions.emphasizedWeight,
                       ),
                       DisplayText(
                         label: duration,
@@ -156,9 +155,12 @@ class _TrackListState extends State<TrackList> {
 
             Container(
               margin: EdgeInsetsGeometry.fromLTRB(0, 20, 0, 10),
-              child: Divider(color: secondaryBlue, thickness: 4),
+              child: Divider(
+                color: deepBlueHighLight.withValues(alpha: .3),
+                thickness: AppDimensions.outlineWidth,
+              ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: AppDimensions.normalSpacing(context)),
             (widget.album.tracks.isNotEmpty)
                 ? DisplayTracks(album: widget.album)
                 : DisplayText(text: "No tracks available"),
@@ -232,18 +234,18 @@ class _TrackCardState extends State<TrackCard> {
         child: AnimatedContainer(
           duration: Duration(milliseconds: 200),
           decoration: BoxDecoration(
-            color: isHovered ? primaryBlue : Color(0xffA7BFDC),
+            color: isHovered ? accent : lightBlueHighlight,
             boxShadow: [
               BoxShadow(
                 //here
-                color: Color.fromARGB(255, 56, 74, 100),
+                color: deepBlueHighLight,
                 blurRadius: 1,
                 blurStyle: BlurStyle.inner,
                 spreadRadius: 1,
                 offset: Offset(-1, 1),
               ),
             ],
-            border: Border.all(color: Color.fromARGB(255, 134, 162, 200)),
+            border: Border.all(color: deepBlueHighLight),
           ),
           height: AppDimensions.trackCardHeight(),
           padding: EdgeInsets.all(4),
@@ -362,7 +364,7 @@ class AddOrRemoveEntryButton extends StatelessWidget {
             Set<WidgetState> states,
           ) {
             if (states.contains(WidgetState.hovered)) {
-              return Color(0xff7092BE);
+              return accent;
             }
             return Color(0xffA7BFDC);
           }),
@@ -390,7 +392,7 @@ class AddOrRemoveEntryButton extends StatelessWidget {
         },
         child: (searchProvider.isSearching)
             ? Icon(Icons.add)
-            : const Icon(Icons.close),
+            : const Icon(Icons.remove),
       ),
     );
   }
@@ -449,7 +451,9 @@ class _RatingsButtonState extends State<RatingsButton> {
     if (_isHovered) {
       return deepBlueHighLight;
     } else {
-      return widget.entity.rating == null ? lightBlueHighlight : blue1;
+      return widget.entity.rating == null
+          ? lightBlueHighlight
+          : deepBlueHighLight;
     }
   }
 

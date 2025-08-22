@@ -21,4 +21,9 @@ class ContentListDimensions {
       albumCardWidth(context) * .7;
   static double albumCardTextBoxWidth(BuildContext context) =>
       albumCardWidth(context) * .8;
+
+  static double pageButtonLeftPosition(BuildContext context) =>
+      albumListPanelWidth(context) * .94;
+  static double pageButtonTopPosition(BuildContext context) =>
+      albumListPanelHeight(context) * .88;
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/dimensions/content_list_dimensions.dart';
 import 'package:frontend/dimensions/tool_bar_dimension.dart';
 import 'package:frontend/providers/selection_provider.dart';
@@ -34,12 +35,12 @@ class _ToolBarState extends State<ToolBar> {
     return Container(
       width: ToolBarDimensions.toolBarWidth(context),
       height: ToolBarDimensions.toolBarHeight(context),
-      margin: EdgeInsets.only(top: 20, bottom: 10),
       decoration: BoxDecoration(
+        border: Border.all(),
         color: lightBlueHighlight,
         borderRadius: ToolBarDimensions.toolBarBorderRadius(),
       ),
-      padding: const EdgeInsets.all(8.0),
+      padding: AppDimensions.normalPadding,
       child: Row(
         children: [
           _ToggleAscOrDesc(
@@ -52,7 +53,7 @@ class _ToolBarState extends State<ToolBar> {
 
           Spacer(),
           _SearchInAlbums(),
-          _Profile(),
+          LogoutButton(),
           HomeButton(),
         ],
       ),
@@ -80,11 +81,10 @@ class _ToggleAscOrDesc extends StatelessWidget {
         albumProvider.sortAlbumsBy(sortParam, isAscending);
       },
       child: Container(
-        margin: EdgeInsets.only(left: 16),
         width: ToolBarDimensions.toolBarHeight(context) * .5,
         height: ToolBarDimensions.toolBarHeight(context) * .5,
         decoration: BoxDecoration(
-          color: deepBlueHighLight,
+          color: accent,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(8),
             bottomLeft: Radius.circular(8),
@@ -125,12 +125,17 @@ class _ChangeOrderState extends State<_ChangeOrder> {
     return Container(
       height: ToolBarDimensions.toolBarHeight(context) * .5,
       decoration: BoxDecoration(
+        color: accent,
         borderRadius: BorderRadius.only(
           topRight: Radius.circular(8),
           bottomRight: Radius.circular(8),
         ),
-        border: Border(right: BorderSide(color: Color(0xff5B82B5))),
-        color: Color(0xff7092BE),
+        border: Border(
+          left: BorderSide(
+            color: deepAccent,
+            width: AppDimensions.outlineWidth,
+          ),
+        ),
       ),
 
       child: PopupMenuButton<String>(
@@ -238,6 +243,23 @@ class _ProfileState extends State<_Profile> {
   }
 }
 
+class LogoutButton extends StatelessWidget {
+  const LogoutButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final supabase = Provider.of<SupabaseConfig>(context);
+    return ElevatedButton(
+      onPressed: () {
+        supabase.logout();
+      },
+
+      style: _toolBarButtonStyle,
+      child: Icon(Icons.logout),
+    );
+  }
+}
+
 class HomeButton extends StatelessWidget {
   const HomeButton({super.key});
 
@@ -248,13 +270,7 @@ class HomeButton extends StatelessWidget {
     final searchProvider = Provider.of<SearchProvider>(context, listen: true);
     final selectionProvider = Provider.of<SelectionProvider>(context);
     return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        shape: CircleBorder(),
-        minimumSize: ToolBarDimensions.navBarButtonMinSize,
-        maximumSize: ToolBarDimensions.navBarButtonMaxSize,
-        backgroundColor: lightGreen,
-        alignment: Alignment.center,
-      ),
+      style: _toolBarButtonStyle,
       onPressed: () async {
         albumProvider.displayingAlbums = await supabaseConfig.retrieveAlbums();
         searchProvider.isSearching = false;
@@ -264,3 +280,11 @@ class HomeButton extends StatelessWidget {
     );
   }
 }
+
+ButtonStyle _toolBarButtonStyle = ElevatedButton.styleFrom(
+  shape: CircleBorder(),
+  minimumSize: ToolBarDimensions.navBarButtonMinSize,
+  maximumSize: ToolBarDimensions.navBarButtonMaxSize,
+  backgroundColor: accent,
+  alignment: Alignment.center,
+);

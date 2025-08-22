@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/widget_text.dart';
+import 'package:frontend/dimensions/auth_panel.dart';
 import 'package:frontend/providers/superbase_config.dart' show SupabaseConfig;
+import 'package:frontend/widgets/info_panel.dart';
 import 'package:provider/provider.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -23,23 +25,16 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xff6D93c2),
+      backgroundColor: deepBlueHighLight,
       body: Consumer<SupabaseConfig>(
         builder: (context, supabase, child) {
           return Center(
             child: Container(
-              padding: EdgeInsets.all(20),
+              padding: AppDimensions.normalPadding,
               width: InfoPanelDimensions.infoPanelWidth(context),
               height: InfoPanelDimensions.infoPanelHeight(context),
               decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: deepBlueHighLight.withValues(alpha: 0.7),
-                    spreadRadius: 5,
-                    blurRadius: 1,
-                    offset: Offset(-3, 3), // changes position of shadow
-                  ),
-                ],
+                boxShadow: [AppDimensions.containershadow],
                 borderRadius: BorderRadius.all(
                   AppDimensions.infoPanelBorderRadius,
                 ),
@@ -59,7 +54,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
 class Login extends StatefulWidget {
   const Login({super.key, required this.toggleLogin});
-  final Function toggleLogin;
+  final VoidCallback toggleLogin;
 
   @override
   State<Login> createState() => _LoginState();
@@ -68,49 +63,68 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  bool isKeepLogin = false;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
     return Column(
       children: [
         InputField(controller: emailController, title: email),
-        SizedBox(height: 15),
+        SizedBox(height: AppDimensions.normalSpacing(context)),
         InputField(
           controller: passwordController,
           title: password,
           obscureText: true,
         ),
+        SizedBox(height: AppDimensions.normalSpacing(context)),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Row(
+            children: [
+              Checkbox(
+                activeColor: accent,
+                value: isKeepLogin,
+                onChanged: (_) {
+                  setState(() {
+                    isKeepLogin = !isKeepLogin;
+                  });
+                },
+              ),
+              DisplayText(text: rememberMe),
+            ],
+          ),
+        ),
+
         Spacer(),
 
-        ElevatedButton(
+        AuthButton(
           onPressed: () async {
             final response = await supabaseConfig.signInWithEmail(
               emailController.text.trim(),
               passwordController.text.trim(),
             );
 
-            _showSnackBar(response.$2, context);
+            showSnackBar(response.$2, context);
             if (response.$1) {
               supabaseConfig.successfulLogin();
-
-              emailController.dispose();
-              passwordController.dispose();
+              if (isKeepLogin) {
+                await supabaseConfig.storeCredentials(email, password);
+              }
             }
           },
-          style: _authButtonStyle,
-          child: Text(style: TextStyle(color: Colors.black), loginButton),
+          buttonText: loginButton,
         ),
 
-        SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            setState(() {
-              widget.toggleLogin();
-            });
-          },
-          style: _authButtonStyle,
-          child: Text(style: TextStyle(color: Colors.black), registerButton),
-        ),
+        SizedBox(height: AppDimensions.largeSpacing(context)),
+        AuthButton(onPressed: widget.toggleLogin, buttonText: registerButton),
       ],
     );
   }
@@ -118,7 +132,7 @@ class _LoginState extends State<Login> {
 
 class Register extends StatefulWidget {
   const Register({super.key, required this.toggleFunction});
-  final Function toggleFunction;
+  final VoidCallback toggleFunction;
 
   @override
   State<Register> createState() => _RegisterState();
@@ -129,10 +143,12 @@ class _RegisterState extends State<Register> {
   final passWordController = TextEditingController();
   final emailController = TextEditingController();
 
-  void disableControllers() {
+  @override
+  void dispose() {
     userNameController.dispose();
     passWordController.dispose();
     emailController.dispose();
+    super.dispose();
   }
 
   @override
@@ -142,41 +158,32 @@ class _RegisterState extends State<Register> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         InputField(title: email, controller: emailController),
-        SizedBox(height: 15),
+        SizedBox(height: AppDimensions.normalSpacing(context)),
         InputField(
           title: password,
           obscureText: true,
           controller: passWordController,
         ),
-        SizedBox(height: 15),
+        SizedBox(height: AppDimensions.normalSpacing(context)),
         InputField(title: username, controller: userNameController),
 
         Spacer(),
-        ElevatedButton(
+        AuthButton(
           onPressed: () async {
             final response = await supabaseConfig.signUpWithEmail(
               emailController.text.trim(),
               passWordController.text.trim(),
               userNameController.text.trim(),
             );
-            _showSnackBar(response.$2, context);
+            showSnackBar(response.$2, context);
             if (response.$1) {
               widget.toggleFunction();
-              disableControllers();
             }
           },
-          style: _authButtonStyle,
-          child: Text(style: TextStyle(color: Colors.black), signUpButton),
+          buttonText: registerButton,
         ),
-        SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            widget.toggleFunction();
-            disableControllers();
-          },
-          style: _authButtonStyle,
-          child: Text(style: TextStyle(color: Colors.black), back),
-        ),
+        SizedBox(height: AppDimensions.normalSpacing(context)),
+        AuthButton(onPressed: widget.toggleFunction, buttonText: back),
       ],
     );
   }
@@ -203,31 +210,75 @@ class InputField extends StatefulWidget {
 class _InputFieldState extends State<InputField> {
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
+      style: textStyle(AppDimensions.normalFontSize),
+
       onChanged: widget.onChanged,
       obscureText: widget.obscureText,
       controller: widget.controller,
       decoration: InputDecoration(
         labelText: widget.title,
-        labelStyle: TextStyle(color: Colors.black, fontSize: 12),
+        labelStyle: textStyle(AppDimensions.normalFontSize),
+        hintStyle: textStyle(AppDimensions.normalFontSize),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: AuthPanelDimensions.inputBorderRadius,
+          borderSide: BorderSide(color: deepAccent),
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.horizontal(
-            left: Radius.circular(8.0),
-            right: Radius.circular(8.0),
-          ),
+          borderSide: BorderSide(color: deepBlueHighLight),
+          borderRadius: AuthPanelDimensions.inputBorderRadius,
         ),
       ),
     );
   }
 }
 
-ButtonStyle _authButtonStyle = ElevatedButton.styleFrom(
-  backgroundColor: blue1,
-  minimumSize: const Size(400, 50),
-  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-);
+class AuthButton extends StatefulWidget {
+  const AuthButton({
+    super.key,
+    required this.onPressed,
+    required this.buttonText,
+  });
+  final VoidCallback onPressed;
+  final String buttonText;
+  @override
+  State<AuthButton> createState() => _AuthButtonState();
+}
 
-void _showSnackBar(String message, BuildContext context) {
+class _AuthButtonState extends State<AuthButton> {
+  void hover() {
+    setState(() {
+      isHovered = !isHovered;
+    });
+  }
+
+  bool isHovered = false;
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onExit: (_) {
+        hover();
+      },
+      onEnter: (_) {
+        setState(() {
+          hover();
+        });
+      },
+
+      child: ElevatedButton(
+        onPressed: widget.onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isHovered ? accent : deepBlueHighLight,
+          minimumSize: const Size(400, 50),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        ),
+        child: DisplayText(text: widget.buttonText),
+      ),
+    );
+  }
+}
+
+void showSnackBar(String message, BuildContext context) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(duration: Duration(seconds: 4), content: Text(message)),
   );

@@ -3,6 +3,7 @@ import 'package:frontend/classes/album.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/dimensions/content_list_dimensions.dart';
+import 'package:frontend/providers/search_provider.dart';
 import 'package:frontend/providers/superbase_config.dart';
 import 'package:frontend/widgets/album_panel.dart';
 import 'package:frontend/providers/album_provider.dart';
@@ -17,12 +18,23 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SupabaseConfig>(
-      builder: (context, supabaseConfig, child) {
-        if (supabaseConfig.isUserLoggedIn == true) {
-          return _BuildHomeScreen();
+    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
+
+    return FutureBuilder<bool>(
+      future: supabaseConfig.isKeptLogin(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
         } else {
-          return AuthScreen();
+          return Consumer<SupabaseConfig>(
+            builder: (context, supabaseConfig, child) {
+              if (supabaseConfig.isUserLoggedIn == true) {
+                return _BuildHomeScreen();
+              } else {
+                return const AuthScreen();
+              }
+            },
+          );
         }
       },
     );
@@ -74,47 +86,99 @@ class _BuildHomeScreenState extends State<_BuildHomeScreen> {
 }
 
 Widget _buildMainContent(BuildContext context) {
-  return SizedBox.expand(
-    child: Column(
+  final searchProvider = Provider.of<SearchProvider>(context);
+  return Container(
+    padding: AppDimensions.largePadding(context),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [primaryBlue, deepBlueHighLight.withValues(alpha: .85)],
+      ),
+    ),
+    width: AppDimensions.width(context),
+    height: AppDimensions.height(context),
+    child: Row(
       children: [
-        Expanded(
-          child: Row(
-            children: [
-              SizedBox(
+        Column(
+          children: [
+            Expanded(
+              child: SizedBox(
                 width: ContentListDimensions.albumListPanelWidth(context),
                 height: ContentListDimensions.albumListPanelHeight(context),
-                child: Container(
-                  width: ContentListDimensions.albumListPanelWidth(context),
-                  height: ContentListDimensions.albumListPanelHeight(context),
-                  decoration: BoxDecoration(color: primaryBlue),
-                  child: Column(
-                    children: [
-                      ToolBar(),
-                      Expanded(child: DisplayAlbums()),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(color: lightBlueHighlight),
-                  width: AppDimensions.sideContainerWidth(context),
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        width: AppDimensions.sideContainerWidth(context),
-                        child: SearchEntryOnline(),
+                child: Stack(
+                  children: [
+                    SizedBox(
+                      width: ContentListDimensions.albumListPanelWidth(context),
+                      height: ContentListDimensions.albumListPanelHeight(
+                        context,
                       ),
-                      const SizedBox(height: 10),
-                      InfoPanel(),
-                    ],
-                  ),
+                      child: Column(
+                        children: [
+                          ToolBar(),
+                          SizedBox(height: AppDimensions.largeSpacing(context)),
+                          Expanded(child: DisplayAlbums()),
+                        ],
+                      ),
+                    ),
+                    if (searchProvider.isSearching)
+                      Positioned(
+                        top: ContentListDimensions.pageButtonTopPosition(
+                          context,
+                        ),
+
+                        left: ContentListDimensions.pageButtonLeftPosition(
+                          context,
+                        ),
+
+                        child: PageButton(fowardOrBack: true),
+                      ),
+                  ],
                 ),
               ),
+            ),
+          ],
+        ),
+        SizedBox(
+          height: double.infinity,
+          width: AppDimensions.normalSpacing(context),
+        ),
+        SizedBox(
+          height: AppDimensions.height(context),
+          width: AppDimensions.sideContainerWidth(context),
+          child: Column(
+            children: [
+              SizedBox(
+                width: AppDimensions.sideContainerWidth(context),
+                child: SearchEntryOnline(),
+              ),
+              SizedBox(height: AppDimensions.largeSpacing(context)),
+              InfoPanel(),
             ],
           ),
         ),
       ],
     ),
   );
+}
+
+class PageButton extends StatelessWidget {
+  PageButton({super.key, required this.fowardOrBack});
+  bool fowardOrBack;
+  @override
+  Widget build(BuildContext context) {
+    final searchProvider = Provider.of<SearchProvider>(context);
+    return IconButton(
+      style: ElevatedButton.styleFrom(backgroundColor: accent),
+      onPressed: () {
+        if (fowardOrBack) {
+          searchProvider.nextPage();
+
+          search(context);
+        }
+      },
+      icon: Icon(
+        size: 30,
+        fowardOrBack ? Icons.arrow_forward : Icons.arrow_back,
+      ),
+    );
+  }
 }

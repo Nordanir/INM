@@ -16,10 +16,14 @@ String succesfulRegistration =
     "Registration successful. Please check your email for confirmation.";
 String loginSuccessfull = "Login successful. Welcome back!";
 
-String defaulCoverUrl =
-    "https://discussions.apple.com/content/attachment/881765040";
-
 String albumTitle = "Album Title :";
 String duration = "Duration :";
 String numOfTracks = "Number of tracks :";
 
+String noSearchResult =
+    "Sorry, I couldn't find any results with those keywords. :(";
+String emptyQuerry = "You searched with an empty querry";
+
+String searching = 'Searching...';
+
+String searchOnlineHint = '';

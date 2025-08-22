@@ -12,8 +12,9 @@ class SearchProvider extends ChangeNotifier {
   };
 
   bool isSearching = false;
-
+  bool isSearchInProgress = false;
   final int _searchlimit = 15;
+  int _offSet = 0;
 
   final _searchCategory = "release";
   String _querry = "";
@@ -21,23 +22,41 @@ class SearchProvider extends ChangeNotifier {
   final _searchBarFocusNode = FocusNode();
   FocusNode get searchFocusNode => _searchBarFocusNode;
 
-  final List<dynamic> _searchResults = [];
-
-  List<dynamic> get searchResults => _searchResults;
+  set querry(String value) {
+    _querry = value;
+    notifyListeners();
+  }
 
   Future<List<Album>> searchFor() async {
-    final response = await http.get(
-      Uri.parse(
-        "https://musicbrainz.org/ws/2/$_searchCategory/?query=${Uri.encodeQueryComponent(_querry)}&limit=$_searchlimit&offset=0&fmt=json",
-      ),
-      headers: headers,
-    );
-    final bodyJson = json.decode(response.body);
-    return _parseRelease(bodyJson['releases']);
+    if (_querry != "") {
+      isSearchInProgress = true;
+      final response = await http.get(
+        Uri.parse(
+          "https://musicbrainz.org/ws/2/$_searchCategory/?query=${Uri.encodeQueryComponent(_querry)}&limit=$_searchlimit&offset=$_offSet&fmt=json",
+        ),
+        headers: headers,
+      );
+      final bodyJson = json.decode(response.body);
+
+      return await _parseRelease(bodyJson['releases']);
+    } else {
+      return [];
+    }
+  }
+
+  void resetOffSet() {
+    _offSet = 0;
+    notifyListeners();
   }
 
   void setQuerry(String value) {
     _querry = value;
+    notifyListeners();
+  }
+
+  void nextPage() {
+    _offSet += _searchlimit;
+    notifyListeners();
   }
 
   Future<List<Album>> _parseRelease(List<dynamic> releases) async {
@@ -110,7 +129,7 @@ class SearchProvider extends ChangeNotifier {
           }
         }
       } else {
-        debugPrint("The media list is empty");
+        debugPrint("This media list is empty");
       }
     } catch (e) {
       debugPrint(e.toString());

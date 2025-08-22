@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
+import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/dimensions/info_panel_dimension.dart';
 
 Duration durationFromSeconds(int seconds) {
@@ -24,17 +25,22 @@ String displayDuration(int durationInSeconds) {
 }
 
 class ScrollableText extends StatefulWidget {
-  const ScrollableText({super.key, required this.text, required this.areaWidth});
+  const ScrollableText({
+    super.key,
+    required this.text,
+    required this.areaWidth,
+    required this.textSize,
+    this.fontWeight = AppDimensions.normalWeight,
+  });
   final String text;
-  final double textSize = 22;
+  final double textSize;
   final double areaWidth;
+  final FontWeight fontWeight;
   @override
   State<ScrollableText> createState() => _ScrollableTextState();
 }
 
 class _ScrollableTextState extends State<ScrollableText> {
-  
-
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
@@ -46,7 +52,7 @@ class _ScrollableTextState extends State<ScrollableText> {
             widget.text,
             textAlign: TextAlign.left,
             style: TextStyle(
-              fontWeight: FontWeight.w600,
+              fontWeight: widget.fontWeight,
               color: black,
               fontSize: widget.textSize,
               fontFamily: "Inconsolata",
