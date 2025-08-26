@@ -63,9 +63,7 @@ class _BuildHomeScreenState extends State<_BuildHomeScreen> {
         context,
         listen: false,
       ).retrieveAlbums();
-      for (Album album in albumProvider.albums) {
-        album.calculateAlbumDuration();
-      }
+      
 
       albumProvider.displayingAlbums = albumProvider.albums;
     } finally {
@@ -119,6 +117,17 @@ Widget _buildMainContent(BuildContext context) {
                         ],
                       ),
                     ),
+                    if (searchProvider.isSearching &&
+                        searchProvider.offSet != 0)
+                      Positioned(
+                        top: ContentListDimensions.pageButtonTopPosition(
+                          context,
+                        ),
+                        right: ContentListDimensions.pageButtonLeftPosition(
+                          context,
+                        ),
+                        child: PageButton(fowardOrBack: false),
+                      ),
                     if (searchProvider.isSearching)
                       Positioned(
                         top: ContentListDimensions.pageButtonTopPosition(

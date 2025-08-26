@@ -1,27 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/dimensions/app_dimension.dart';
-import 'package:frontend/dimensions/info_panel_dimension.dart';
 
-Duration durationFromSeconds(int seconds) {
-  int secshehe = (seconds / 1000).toInt();
-  int mins = (secshehe / 60).toInt();
-  int fax = 60 * mins;
-  int amacimasodpercei = secshehe - fax;
-
-  return Duration(minutes: mins, seconds: amacimasodpercei);
-}
-
-String displayDuration(int durationInSeconds) {
-  final duration = durationFromSeconds(durationInSeconds);
-  final String hours = duration.inHours.toString();
-  final String minutes = duration.inMinutes.toString();
-  final String seconds = duration.inSeconds.remainder(60).toString();
-  return [
-    if (duration.inHours != 0) hours.toString(),
-    minutes,
-    seconds,
-  ].join(':');
+String displayDuration(int miliseconds) {
+  int seconds = miliseconds ~/ 1000;
+  int mins = (seconds / 60).toInt();
+  seconds -= mins * 60;
+  int hours = (mins / 60).toInt();
+  mins -= hours * 60;
+  return [if (hours != 0) hours, mins, seconds].join(':');
 }
 
 class ScrollableText extends StatefulWidget {

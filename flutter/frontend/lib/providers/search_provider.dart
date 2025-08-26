@@ -11,7 +11,7 @@ class SearchProvider extends ChangeNotifier {
     'User-Agent': 'INM/1.0 (soosgabor0212@gmail.com)',
   };
 
-  bool isSearching = false;
+  bool _isSearching = false;
   bool isSearchInProgress = false;
   final int _searchlimit = 15;
   int _offSet = 0;
@@ -24,6 +24,19 @@ class SearchProvider extends ChangeNotifier {
 
   set querry(String value) {
     _querry = value;
+    notifyListeners();
+  }
+
+  bool get isSearching {
+    return _isSearching;
+  }
+
+  int get offSet {
+    return _offSet;
+  }
+
+  set isSearching(bool value) {
+    _isSearching = value;
     notifyListeners();
   }
 
@@ -56,6 +69,13 @@ class SearchProvider extends ChangeNotifier {
 
   void nextPage() {
     _offSet += _searchlimit;
+    notifyListeners();
+  }
+
+  void previousPage() {
+    if (_offSet != 0) {
+      _offSet -= _searchlimit;
+    }
     notifyListeners();
   }
 

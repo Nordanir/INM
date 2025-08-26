@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 final black = Color(0xff000000);
+final white = Color(0xffffffff);
 
 final blue1 = Color(0xFF5f91d0);
 

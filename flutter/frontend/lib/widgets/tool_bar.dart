@@ -211,18 +211,17 @@ class _ProfileState extends State<_Profile> {
       context,
       listen: true,
     ).currentProfile;
-    return Container(
-      decoration: BoxDecoration(),
+    return SizedBox(
       width: ContentListDimensions.albumListPanelWidth(context) * .2,
       child: MouseRegion(
         onEnter: (_) {
           setState(() {
-            textColor = Colors.white;
+            textColor = white;
           });
         },
         onExit: (_) {
           setState(() {
-            textColor = Colors.black;
+            textColor = black;
           });
         },
         child: GestureDetector(

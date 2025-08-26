@@ -1,3 +1,7 @@
+import 'package:frontend/classes/album.dart';
+
+String anonKey =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsZm10b3VxaW9wcXNhd29yanBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NjkzMDcsImV4cCI6MjA2NjM0NTMwN30.UvthMnLDJbH2ud9Cy15a5zHSGa_29hD-bLEABfM_gVs';
 String username = "Username";
 String password = "Password";
 String email = "E-Mail";
@@ -27,3 +31,15 @@ String emptyQuerry = "You searched with an empty querry";
 String searching = 'Searching...';
 
 String searchOnlineHint = '';
+
+String albumDeleted(Album album) {
+  return '${album.title} was deleted from your library.';
+}
+
+String albumAdded(Album album) {
+  return '${album.title} was added to your library.';
+}
+
+String entryAlreadyExists(Album album) {
+  return '${album.title} is already in your labrary';
+}

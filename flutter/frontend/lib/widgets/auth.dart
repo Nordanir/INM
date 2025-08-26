@@ -116,7 +116,10 @@ class _LoginState extends State<Login> {
             if (response.$1) {
               supabaseConfig.successfulLogin();
               if (isKeepLogin) {
-                await supabaseConfig.storeCredentials(email, password);
+                await supabaseConfig.storeCredentials(
+                  emailController.text,
+                  passwordController.text,
+                );
               }
             }
           },
@@ -280,6 +283,6 @@ class _AuthButtonState extends State<AuthButton> {
 
 void showSnackBar(String message, BuildContext context) {
   ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(duration: Duration(seconds: 4), content: Text(message)),
+    SnackBar(duration: Duration(seconds: 3), content: Text(message)),
   );
 }

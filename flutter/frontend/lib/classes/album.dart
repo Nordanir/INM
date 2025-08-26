@@ -3,7 +3,6 @@ import 'package:frontend/classes/entity.dart';
 import 'package:frontend/classes/track.dart';
 
 class Album extends Entity {
-  final String id;
   final String title;
   int duration;
   final int numberOfTracks;
@@ -17,7 +16,7 @@ class Album extends Entity {
   }
 
   Album({
-    required this.id,
+    required super.id,
     required this.title,
     required this.coverUrl,
     required this.numberOfTracks,
@@ -33,8 +32,8 @@ class Album extends Entity {
     }
   }
 
-  factory Album.fromJson(Map<String, dynamic> json) {
-    return Album(
+  factory Album.fromJson(Map<String, dynamic> json, double? rating) {
+    final album = Album(
       duration: json['duration'],
       numberOfTracks: json['number_of_tracks'],
       id: json['id'],
@@ -52,5 +51,7 @@ class Album extends Entity {
         },
       ),
     );
+    album.rating = rating;
+    return album;
   }
 }

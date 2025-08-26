@@ -9,6 +9,7 @@ import 'package:frontend/providers/selection_provider.dart';
 import 'package:frontend/providers/superbase_config.dart';
 import 'package:frontend/providers/album_provider.dart';
 import 'package:frontend/providers/search_provider.dart';
+import 'package:frontend/widgets/auth.dart';
 import 'package:frontend/widgets/util.dart';
 import 'package:provider/provider.dart';
 
@@ -89,10 +90,16 @@ class _TrackListState extends State<TrackList> {
     });
   }
 
+  void hideRatingBox() {
+    setState(() {
+      isRatingBoxDisplayed = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final selectionProvider = Provider.of<SelectionProvider>(context);
-
+    final searchProvider = Provider.of<SearchProvider>(context);
     return Stack(
       children: [
         Column(
@@ -143,10 +150,18 @@ class _TrackListState extends State<TrackList> {
                         height:
                             InfoPanelDimensions.entryButtonHeight(context) / 2,
                       ),
-                      RatingsButton(
-                        entity: selectionProvider.selectedAlbum!,
-                        function: displayRatingBox,
-                      ),
+                      if (!searchProvider.isSearching)
+                        RatingsButton(
+                          entity: selectionProvider.selectedAlbum!,
+                          function: displayRatingBox,
+                          child: selectionProvider.selectedAlbum!.rating != 0
+                              ? DisplayText(
+                                  text: selectionProvider.selectedAlbum!.rating!
+                                      .toInt()
+                                      .toString(),
+                                )
+                              : SizedBox.shrink(),
+                        ),
                     ],
                   ),
                 ],
@@ -172,7 +187,10 @@ class _TrackListState extends State<TrackList> {
                     InfoPanelDimensions.infoPanelContentWidth(context) -
                     InfoPanelDimensions.ratingBoxWidth(context),
                 top: InfoPanelDimensions.infoPanelContentHeight(context) * .2,
-                child: RatingBox(entity: selectionProvider.selectedAlbum!),
+                child: RatingBox(
+                  entity: selectionProvider.selectedAlbum!,
+                  onRated: hideRatingBox,
+                ),
               )
             : SizedBox.shrink(),
       ],
@@ -248,7 +266,7 @@ class _TrackCardState extends State<TrackCard> {
             border: Border.all(color: deepBlueHighLight),
           ),
           height: AppDimensions.trackCardHeight(),
-          padding: EdgeInsets.all(4),
+          padding: AppDimensions.smallPadding,
           child: Stack(
             alignment: Alignment.topLeft,
             children: [
@@ -300,15 +318,15 @@ class TrackInfo extends StatelessWidget {
           Column(
             children: [
               DisplayText(text: track.title),
-              const SizedBox(height: 15),
+              SizedBox(height: AppDimensions.normalSpacing(context)),
               DisplayText(
                 text: "${album.title} - ${track.numberOnTheAlbum}. track",
               ),
             ],
           ),
-          const SizedBox(height: 15),
+          SizedBox(height: AppDimensions.normalSpacing(context)),
           Divider(thickness: 4, color: deepBlueHighLight),
-          const SizedBox(height: 20),
+          SizedBox(height: AppDimensions.largeSpacing(context)),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -366,7 +384,7 @@ class AddOrRemoveEntryButton extends StatelessWidget {
             if (states.contains(WidgetState.hovered)) {
               return accent;
             }
-            return Color(0xffA7BFDC);
+            return lightBlueHighlight;
           }),
           shape: WidgetStatePropertyAll(
             RoundedRectangleBorder(
@@ -378,14 +396,20 @@ class AddOrRemoveEntryButton extends StatelessWidget {
         ),
         onPressed: () async {
           if (searchProvider.isSearching) {
-            Provider.of<SupabaseConfig>(
+            final response = await Provider.of<SupabaseConfig>(
               context,
               listen: false,
             ).addAlbumToDatabase(selectionProvider.selectedAlbum!);
+
+            showSnackBar(response, context);
           } else {
             await albumProvider.deleteAlbum(
               selectionProvider.selectedAlbum!,
               supabase,
+            );
+            showSnackBar(
+              albumDeleted(selectionProvider.selectedAlbum!),
+              context,
             );
             selectionProvider.changeSelectedAlbum(null);
           }
@@ -431,79 +455,70 @@ class CloseButton extends StatelessWidget {
   }
 }
 
-class RatingsButton extends StatefulWidget {
+class RatingsButton extends StatelessWidget {
+  final Widget child;
   final Entity entity;
-  final Function function;
+  final VoidCallback function;
+  final bool filled;
   const RatingsButton({
     super.key,
+    this.child = const SizedBox.shrink(),
     required this.entity,
     required this.function,
+    this.filled = false,
   });
 
   @override
-  State<RatingsButton> createState() => _RatingsButtonState();
-}
-
-class _RatingsButtonState extends State<RatingsButton> {
-  bool _isHovered = false;
-
-  Color get color {
-    if (_isHovered) {
-      return deepBlueHighLight;
-    } else {
-      return widget.entity.rating == null
-          ? lightBlueHighlight
-          : deepBlueHighLight;
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) {
-        setState(() {
-          _isHovered = true;
-        });
-      },
-      onExit: (_) {
-        setState(() {
-          _isHovered = false;
-        });
-      },
-      child: GestureDetector(
-        onTap: () {
-          widget.function();
-        },
-        child: Container(
-          height: InfoPanelDimensions.entryButtonHeight(context),
-          width: InfoPanelDimensions.entryButtonWidth(context),
-          decoration: ShapeDecoration(
-            color: color,
-            shape: StarBorder(
-              side: BorderSide(color: deepBlueHighLight),
-              points: 5,
-              rotation: 0,
-              innerRadiusRatio: .5,
-              pointRounding: .1,
-            ),
+    final color = filled ? accent : lightBlueHighlight;
+    return GestureDetector(
+      onTap: function,
+      child: Container(
+        height: InfoPanelDimensions.entryButtonHeight(context) * 1.1,
+        width: InfoPanelDimensions.entryButtonWidth(context) * 1.1,
+        decoration: ShapeDecoration(
+          color: color,
+          shape: StarBorder(
+            side: BorderSide(color: deepBlueHighLight),
+            points: 5,
+            rotation: 0,
+            innerRadiusRatio: .5,
+            pointRounding: .1,
           ),
-          child: widget.entity.rating != null
-              ? Text(widget.entity.rating.toString())
-              : null,
+        ),
+        alignment: Alignment.center, // Center the child
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: DefaultTextStyle(
+            style: TextStyle(
+              fontSize: AppDimensions.smallFontSize, // Smaller font size to fit
+              color: black,
+              fontWeight: FontWeight.bold,
+            ),
+            child: child,
+          ),
         ),
       ),
     );
   }
 }
 
-class RatingBox extends StatelessWidget {
-  const RatingBox({super.key, required this.entity});
+class RatingBox extends StatefulWidget {
+  const RatingBox({super.key, required this.entity, required this.onRated});
   final Entity entity;
+  final VoidCallback onRated;
+
+  @override
+  State<RatingBox> createState() => _RatingBoxState();
+}
+
+class _RatingBoxState extends State<RatingBox> {
+  int hoveredIndex = -1;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: AppDimensions.smallPadding,
       width: InfoPanelDimensions.ratingBoxWidth(context),
       height: InfoPanelDimensions.ratingBoxHeight(context),
       decoration: BoxDecoration(
@@ -511,13 +526,32 @@ class RatingBox extends StatelessWidget {
         border: Border.all(color: Colors.black),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           for (var i = 0; i < 5; i++)
-            RatingsButton(
-              entity: entity,
-              function: () {
-                entity.updateRating(i.toDouble());
+            MouseRegion(
+              onEnter: (_) {
+                setState(() {
+                  hoveredIndex = i;
+                });
               },
+              onExit: (_) {
+                setState(() {
+                  hoveredIndex = -1;
+                });
+              },
+              child: RatingsButton(
+                entity: widget.entity,
+                function: () async {
+                  widget.entity.rating = i.toDouble() + 1;
+                  await Provider.of<SupabaseConfig>(
+                    context,
+                    listen: false,
+                  ).setRatingOfEntity(widget.entity, i.toDouble() + 1);
+                  widget.onRated();
+                },
+                filled: i <= hoveredIndex,
+              ),
             ),
         ],
       ),

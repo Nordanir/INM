@@ -37,7 +37,7 @@ class InfoPanelDimensions {
       InfoPanelDimensions.infoPanelWidth(context) * .075;
 
   static double ratingBoxWidth(BuildContext context) =>
-      InfoPanelDimensions.infoPanelContentWidth(context) * .5;
+      InfoPanelDimensions.infoPanelContentWidth(context) * .6;
   static double ratingBoxHeight(BuildContext context) =>
       InfoPanelDimensions.infoPanelContentHeight(context) * .15;
 

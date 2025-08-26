@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:frontend/classes/album.dart';
+import 'package:frontend/classes/entity.dart';
 import 'package:frontend/constants/widget_text.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -17,10 +18,18 @@ class SupabaseConfig with ChangeNotifier {
   User loggedInUser = User();
   Profile currentProfile = Profile();
 
+  Future<void> setRatingOfEntity(Entity entity, double rating) async {
+    final response = await _client
+        .from('entries_of_user')
+        .update({'rating': rating})
+        .eq('profile_id', currentProfile.profileId)
+        .eq('album_id', entity.id)
+        .select();
+  }
+
   static Future<SupabaseConfig> initSupabase() async {
     final supabaseUrl = "https://rlfmtouqiopqsaworjpf.supabase.co";
-    final anonAPIKey =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsZm10b3VxaW9wcXNhd29yanBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NjkzMDcsImV4cCI6MjA2NjM0NTMwN30.UvthMnLDJbH2ud9Cy15a5zHSGa_29hD-bLEABfM_gVs";
+    final anonAPIKey = anonKey;
     await Supabase.initialize(url: supabaseUrl, anonKey: anonAPIKey);
     SupabaseClient client = Supabase.instance.client;
     return SupabaseConfig(client);
@@ -55,7 +64,7 @@ class SupabaseConfig with ChangeNotifier {
             .from('tracks_of_album')
             .delete()
             .eq('album_id', album.id)
-            .select('track_id') // Verify what was deleted
+            .select('track_id')
             .then((res) {
               debugPrint('Deleted ${res.length} relationships');
               return res;
@@ -88,7 +97,7 @@ class SupabaseConfig with ChangeNotifier {
     }
   }
 
-  Future<void> addAlbumToDatabase(Album album) async {
+  Future<String> addAlbumToDatabase(Album album) async {
     try {
       final response = await _client.from('albums').select().eq("id", album.id);
 
@@ -136,11 +145,14 @@ class SupabaseConfig with ChangeNotifier {
       await _client.from('entries_of_user').insert({
         'profile_id': currentProfile.profileId,
         'album_id': album.id,
+        'rating': 0,
       });
       debugPrint("${album.id} was added to user ");
+      return albumAdded(album);
     } on PostgrestException catch (e) {
       if (e.code == "23505") {
         debugPrint("This entry already exists");
+        return entryAlreadyExists(album);
       } else {
         debugPrint('Database error: ${e.code} - ${e.message}');
         debugPrint('Details: ${e.details}');
@@ -170,7 +182,7 @@ class SupabaseConfig with ChangeNotifier {
       return (true, succesfulRegistration);
     } on AuthApiException catch (e) {
       return (false, _getErrorMessage(e));
-    } on AuthWeakPasswordException catch (e) {
+    } on AuthWeakPasswordException {
       return (false, weakPassword);
     }
   }
@@ -220,7 +232,7 @@ class SupabaseConfig with ChangeNotifier {
     if (email == null || password == null) {
       return false;
     } else {
-      signInWithEmail(email, password);
+      await signInWithEmail(email, password);
       _isUserLoggedIn = true;
       notifyListeners();
       return true;
@@ -244,12 +256,12 @@ class SupabaseConfig with ChangeNotifier {
   Future<List<Album>> retrieveAlbums() async {
     final entriesOfProfile = await _client
         .from("entries_of_user")
-        .select("album_id")
+        .select("album_id, rating")
         .eq("profile_id", currentProfile.profileId);
+
     currentProfile._entriesOfProfile = entriesOfProfile
         .map((entry) => entry['album_id'].toString())
         .toList();
-
     if (entriesOfProfile.isEmpty) {
       debugPrint("Your database is empty");
       return [];
@@ -265,7 +277,17 @@ class SupabaseConfig with ChangeNotifier {
           ''')
         .inFilter("id", currentProfile._entriesOfProfile);
 
-    return (response as List).map((json) => Album.fromJson(json)).toList();
+    List<Album> albums = [];
+
+    for (var entry in response.toList()) {
+      double rating = entriesOfProfile
+          .firstWhere((e) => e['album_id'] == entry['id'])['rating']
+          .toDouble();
+
+      albums.add(Album.fromJson(entry, rating));
+    }
+
+    return albums;
   }
 }
 
