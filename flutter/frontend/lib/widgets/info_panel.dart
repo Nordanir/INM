@@ -5,12 +5,13 @@ import 'package:frontend/classes/track.dart';
 import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/widget_text.dart';
-import 'package:frontend/providers/selection_provider.dart';
+import 'package:frontend/providers/display_provider.dart';
 import 'package:frontend/providers/superbase_config.dart';
-import 'package:frontend/providers/album_provider.dart';
 import 'package:frontend/providers/search_provider.dart';
+import 'package:frontend/themes/text_theme.dart';
+import 'package:frontend/utils/text_display_widgets.dart';
 import 'package:frontend/widgets/auth.dart';
-import 'package:frontend/widgets/util.dart';
+import 'package:frontend/utils/time_display.dart';
 import 'package:provider/provider.dart';
 
 class InfoPanel extends StatelessWidget {
@@ -18,10 +19,10 @@ class InfoPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectionProvider = Provider.of<SelectionProvider>(context);
-    final album = selectionProvider.selectedAlbum;
+    final displayProvider = Provider.of<DisplayProvider>(context);
+    final entity = displayProvider.selectedEntity;
 
-    if (album == null) return const SizedBox.shrink();
+    if (entity == null) return const SizedBox.shrink();
     return Container(
       padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
       width: InfoPanelDimensions.infoPanelWidth(context),
@@ -32,57 +33,28 @@ class InfoPanel extends StatelessWidget {
         border: Border.all(color: black),
         color: lightBlueHighlight,
       ),
-      child: (selectionProvider.selectedTrack == null)
-          ? TrackList(album: album)
-          : TrackInfo(),
+      child: Builder(
+        builder: (context) {
+          if (entity is Album) {
+            return AlbumInfo(album: entity);
+          } else {
+            return SizedBox.shrink();
+          }
+        },
+      ),
     );
   }
 }
 
-class DisplayText extends StatelessWidget {
-  const DisplayText({
-    super.key,
-    required this.text,
-    this.label,
-    this.align = TextAlign.left,
-    this.textsize = AppDimensions.normalFontSize,
-    this.letterSpacing = 1.5,
-  });
-  final String text;
-  final String? label;
-  final TextAlign align;
-  final double textsize;
-  final double letterSpacing;
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label != null ? "$label  $text" : text,
-      textAlign: align,
-      style: textStyle(textsize),
-      overflow: TextOverflow.ellipsis,
-      maxLines: 1,
-    );
-  }
-}
-
-TextStyle textStyle(double textsize) {
-  return TextStyle(
-    fontWeight: AppDimensions.normalWeight,
-    color: black,
-    fontSize: textsize,
-    fontFamily: "Inconsolata",
-  );
-}
-
-class TrackList extends StatefulWidget {
-  const TrackList({super.key, required this.album});
+class AlbumInfo extends StatefulWidget {
+  const AlbumInfo({super.key, required this.album});
   final Album album;
 
   @override
-  State<TrackList> createState() => _TrackListState();
+  State<AlbumInfo> createState() => _AlbumInfoState();
 }
 
-class _TrackListState extends State<TrackList> {
+class _AlbumInfoState extends State<AlbumInfo> {
   bool isRatingBoxDisplayed = false;
   void displayRatingBox() {
     setState(() {
@@ -98,7 +70,8 @@ class _TrackListState extends State<TrackList> {
 
   @override
   Widget build(BuildContext context) {
-    final selectionProvider = Provider.of<SelectionProvider>(context);
+    final TextTheme currentTheme = Theme.of(context).textTheme;
+    final displayProvider = Provider.of<DisplayProvider>(context);
     final searchProvider = Provider.of<SearchProvider>(context);
     return Stack(
       children: [
@@ -115,70 +88,68 @@ class _TrackListState extends State<TrackList> {
                     decoration: BoxDecoration(
                       border: Border.all(width: AppDimensions.outlineWidth),
                     ),
-                    child: selectionProvider.selectedAlbum!.cover,
+                    child: widget.album.cover,
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ScrollableText(
-                        textSize: AppDimensions.emphasizedFontSize,
                         text: widget.album.title,
-                        areaWidth: InfoPanelDimensions.scrollableTitleWidth(
-                          context,
-                        ),
-                        fontWeight: AppDimensions.emphasizedWeight,
+                        textStyle: currentTheme.titleMedium!,
                       ),
                       DisplayText(
-                        label: duration,
                         text: displayDuration(widget.album.duration),
-                        align: TextAlign.left,
                         letterSpacing: 2.5,
+                        textStyle: currentTheme.bodyMedium,
                       ),
                       DisplayText(
-                        label: numOfTracks,
                         text: widget.album.numberOfTracks.toString(),
-                        align: TextAlign.left,
+                        textAlign: TextAlign.left,
+                        textStyle: currentTheme.bodyMedium,
                         letterSpacing: 2.5,
                       ),
                     ],
                   ),
-                  Spacer(),
+                  const Spacer(),
                   Column(
                     children: [
-                      AddOrRemoveEntryButton(),
+                      const AddOrRemoveEntryButton(),
                       SizedBox(
                         height:
                             InfoPanelDimensions.entryButtonHeight(context) / 2,
                       ),
                       if (!searchProvider.isSearching)
                         RatingsButton(
-                          entity: selectionProvider.selectedAlbum!,
+                          entity: displayProvider.selectedEntity!,
                           function: displayRatingBox,
-                          child: selectionProvider.selectedAlbum!.rating != 0
+                          child: displayProvider.selectedEntity!.rating != 0
                               ? DisplayText(
-                                  text: selectionProvider.selectedAlbum!.rating!
+                                  text: displayProvider.selectedEntity!.rating!
                                       .toInt()
                                       .toString(),
+                                  textStyle: currentTheme.titleMedium,
                                 )
-                              : SizedBox.shrink(),
+                              : const SizedBox.shrink(),
                         ),
                     ],
                   ),
                 ],
               ),
             ),
-
             Container(
-              margin: EdgeInsetsGeometry.fromLTRB(0, 20, 0, 10),
+              margin: const EdgeInsets.fromLTRB(0, 20, 0, 10),
               child: Divider(
-                color: deepBlueHighLight.withValues(alpha: .3),
+                color: deepBlueHighLight.withAlpha((.3 * 255).toInt()),
                 thickness: AppDimensions.outlineWidth,
               ),
             ),
             SizedBox(height: AppDimensions.normalSpacing(context)),
             (widget.album.tracks.isNotEmpty)
                 ? DisplayTracks(album: widget.album)
-                : DisplayText(text: "No tracks available"),
+                : DisplayText(
+                    text: noTracksAvailable,
+                    textStyle: currentTheme.labelLarge,
+                  ),
           ],
         ),
         isRatingBoxDisplayed == true
@@ -188,8 +159,19 @@ class _TrackListState extends State<TrackList> {
                     InfoPanelDimensions.ratingBoxWidth(context),
                 top: InfoPanelDimensions.infoPanelContentHeight(context) * .2,
                 child: RatingBox(
-                  entity: selectionProvider.selectedAlbum!,
+                  entity: displayProvider.selectedEntity!,
                   onRated: hideRatingBox,
+                ),
+              )
+            : SizedBox.shrink(),
+
+        displayProvider.selectedTrack != null
+            ? Positioned(
+                left: InfoPanelDimensions.infoPanelWidth(context) * .1,
+                top: 0,
+                child: TrackInfo(
+                  album: widget.album,
+                  track: displayProvider.selectedTrack!,
                 ),
               )
             : SizedBox.shrink(),
@@ -231,7 +213,8 @@ class _TrackCardState extends State<TrackCard> {
   bool isHovered = false;
   @override
   Widget build(BuildContext context) {
-    final selectionProvider = Provider.of<SelectionProvider>(context);
+    final TextTheme currentTheme = Theme.of(context).textTheme;
+    final displayProvider = Provider.of<DisplayProvider>(context);
     return MouseRegion(
       onEnter: (_) => {
         setState(() {
@@ -246,7 +229,7 @@ class _TrackCardState extends State<TrackCard> {
       },
       child: GestureDetector(
         onTap: () {
-          selectionProvider.changeSelectedTrack(widget.track);
+          displayProvider.changeSelectedTrack(widget.track);
         },
 
         child: AnimatedContainer(
@@ -272,12 +255,18 @@ class _TrackCardState extends State<TrackCard> {
             children: [
               Positioned(
                 left: 10,
-                child: DisplayText(text: '${widget.track.numberOnTheAlbum}.'),
+                child: DisplayText(
+                  text: '${widget.track.numberOnTheAlbum}.',
+                  textStyle: currentTheme.bodyMedium,
+                ),
               ),
               Positioned(
                 left: AppDimensions.trackTitlePosition(),
                 right: AppDimensions.trackTitleSpan(),
-                child: DisplayText(text: widget.track.title),
+                child: DisplayText(
+                  text: widget.track.title,
+                  textStyle: currentTheme.bodyMedium,
+                ),
               ),
             ],
           ),
@@ -288,17 +277,15 @@ class _TrackCardState extends State<TrackCard> {
 }
 
 class TrackInfo extends StatelessWidget {
-  const TrackInfo({super.key});
-
+  const TrackInfo({super.key, required this.album, required this.track});
+  final Album album;
+  final Track track;
   @override
   Widget build(BuildContext context) {
-    final selectionProvider = Provider.of<SelectionProvider>(context);
-
-    final track = selectionProvider.selectedTrack!;
-    final album = selectionProvider.selectedAlbum!;
+    final TextTheme currentTheme = Theme.of(context).textTheme;
     return Container(
       width: InfoPanelDimensions.trackInfoPanelIWitdth(context),
-      height: InfoPanelDimensions.infoPanelHeight(context),
+      height: InfoPanelDimensions.infoPanelHeight(context) / 2,
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
@@ -317,10 +304,14 @@ class TrackInfo extends StatelessWidget {
           CloseButton(),
           Column(
             children: [
-              DisplayText(text: track.title),
+              DisplayText(
+                text: track.title,
+                textStyle: currentTheme.titleMedium,
+              ),
               SizedBox(height: AppDimensions.normalSpacing(context)),
               DisplayText(
-                text: "${album.title} - ${track.numberOnTheAlbum}. track",
+                text: titleNthTrackOnTheAlbum(album, track),
+                textStyle: currentTheme.bodyMedium,
               ),
             ],
           ),
@@ -347,13 +338,30 @@ class TrackInfo extends StatelessWidget {
                 children: [
                   DisplayText(
                     text: displayDuration(track.duration),
-                    label: "Duration : ",
+                    textStyle: currentTheme.bodyMedium,
                   ),
-                  if (track.isASingle) DisplayText(text: "Single"),
-                  if (track.isALive) DisplayText(text: "Live"),
-                  DisplayText(text: "Genres : "),
-                  DisplayText(text: "Record Label : "),
-                  DisplayText(text: "Producer :"),
+                  if (track.isASingle)
+                    DisplayText(
+                      text: "Single",
+                      textStyle: currentTheme.labelMedium,
+                    ),
+                  if (track.isALive)
+                    DisplayText(
+                      text: "Live",
+                      textStyle: currentTheme.labelMedium,
+                    ),
+                  DisplayText(
+                    text: "Genres : ",
+                    textStyle: currentTheme.labelMedium,
+                  ),
+                  DisplayText(
+                    text: "Record Label : ",
+                    textStyle: currentTheme.labelMedium,
+                  ),
+                  DisplayText(
+                    text: "Producer :",
+                    textStyle: currentTheme.labelMedium,
+                  ),
                 ],
               ),
             ],
@@ -368,10 +376,9 @@ class AddOrRemoveEntryButton extends StatelessWidget {
   const AddOrRemoveEntryButton({super.key});
   @override
   Widget build(BuildContext context) {
-    final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
     final searchProvider = Provider.of<SearchProvider>(context, listen: true);
     final supabase = Provider.of<SupabaseConfig>(context, listen: true);
-    final selectionProvider = Provider.of<SelectionProvider>(context);
+    final displayProvider = Provider.of<DisplayProvider>(context);
 
     return SizedBox(
       width: InfoPanelDimensions.entryButtonWidth(context),
@@ -399,19 +406,16 @@ class AddOrRemoveEntryButton extends StatelessWidget {
             final response = await Provider.of<SupabaseConfig>(
               context,
               listen: false,
-            ).addAlbumToDatabase(selectionProvider.selectedAlbum!);
+            ).addEntityToDatabase(displayProvider.selectedEntity!);
 
             showSnackBar(response, context);
           } else {
-            await albumProvider.deleteAlbum(
-              selectionProvider.selectedAlbum!,
-              supabase,
-            );
+            await supabase.removeEntity(displayProvider.selectedEntity!);
             showSnackBar(
-              albumDeleted(selectionProvider.selectedAlbum!),
+              entityDeleted(displayProvider.selectedEntity!),
               context,
             );
-            selectionProvider.changeSelectedAlbum(null);
+            displayProvider.changeSelectedEntity(null);
           }
         },
         child: (searchProvider.isSearching)
@@ -422,33 +426,53 @@ class AddOrRemoveEntryButton extends StatelessWidget {
   }
 }
 
-class CloseButton extends StatelessWidget {
+class CloseButton extends StatefulWidget {
   const CloseButton({super.key});
 
   @override
+  State<CloseButton> createState() => _CloseButtonState();
+}
+
+class _CloseButtonState extends State<CloseButton> {
+  bool isHovered = false;
+
+  void hover() {
+    setState(() {
+      isHovered = !isHovered;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final selectionProvider = Provider.of<SelectionProvider>(context);
+    final displayProvider = Provider.of<DisplayProvider>(context);
     return Align(
       alignment: Alignment.topLeft,
-      child: Container(
-        padding: EdgeInsets.zero,
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: black),
-            right: BorderSide(color: black),
+      child: MouseRegion(
+        onEnter: (_) => {hover()},
+        onExit: (_) => {hover()},
+        child: Container(
+          padding: EdgeInsets.zero,
+          decoration: BoxDecoration(
+            color: isHovered ? accent : lightBlueHighlight,
+            border: Border(
+              bottom: BorderSide(color: black),
+              right: BorderSide(color: black),
+            ),
+            borderRadius: BorderRadius.only(
+              bottomRight: Radius.elliptical(4, 8),
+            ),
           ),
-          borderRadius: BorderRadius.only(bottomRight: Radius.elliptical(4, 8)),
-        ),
-        height: InfoPanelDimensions.closeTrackInfoButtonHeight(context),
-        width: InfoPanelDimensions.closeTrackInfoButtonWidth(context),
-        child: IconButton(
-          style: IconButton.styleFrom(padding: EdgeInsets.zero),
-          onPressed: () {
-            selectionProvider.changeSelectedTrack(null);
-          },
-          hoverColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          icon: Icon(Icons.close),
+          height: InfoPanelDimensions.closeTrackInfoButtonHeight(context),
+          width: InfoPanelDimensions.closeTrackInfoButtonWidth(context),
+          child: IconButton(
+            style: IconButton.styleFrom(padding: EdgeInsets.zero),
+            onPressed: () {
+              displayProvider.changeSelectedTrack(null);
+            },
+            hoverColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            icon: Icon(Icons.close),
+          ),
         ),
       ),
     );
@@ -486,12 +510,12 @@ class RatingsButton extends StatelessWidget {
             pointRounding: .1,
           ),
         ),
-        alignment: Alignment.center, // Center the child
+        alignment: Alignment.center,
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: DefaultTextStyle(
             style: TextStyle(
-              fontSize: AppDimensions.smallFontSize, // Smaller font size to fit
+              fontSize: smallFontSize(context),
               color: black,
               fontWeight: FontWeight.bold,
             ),

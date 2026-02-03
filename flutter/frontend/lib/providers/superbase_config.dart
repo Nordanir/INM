@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:frontend/classes/album.dart';
+import 'package:frontend/classes/artist.dart';
 import 'package:frontend/classes/entity.dart';
 import 'package:frontend/constants/widget_text.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,14 +12,12 @@ class SupabaseConfig with ChangeNotifier {
   SupabaseConfig(this._client);
   SupabaseClient get databaseClient => _client;
 
-  final storage = FlutterSecureStorage();
-
   bool? _isUserLoggedIn;
   User loggedInUser = User();
   Profile currentProfile = Profile();
 
   Future<void> setRatingOfEntity(Entity entity, double rating) async {
-    final response = await _client
+    await _client
         .from('entries_of_user')
         .update({'rating': rating})
         .eq('profile_id', currentProfile.profileId)
@@ -28,9 +26,7 @@ class SupabaseConfig with ChangeNotifier {
   }
 
   static Future<SupabaseConfig> initSupabase() async {
-    final supabaseUrl = "https://rlfmtouqiopqsaworjpf.supabase.co";
-    final anonAPIKey = anonKey;
-    await Supabase.initialize(url: supabaseUrl, anonKey: anonAPIKey);
+    await Supabase.initialize(url: supabaseUrl, anonKey: anonKey);
     SupabaseClient client = Supabase.instance.client;
     return SupabaseConfig(client);
   }
@@ -39,6 +35,17 @@ class SupabaseConfig with ChangeNotifier {
   void successfulLogin() {
     _isUserLoggedIn = true;
     notifyListeners();
+  }
+
+  //TODO implement this shit
+  List<Artist> retrieveArtists() {
+    return [];
+  }
+
+  Future<void> removeEntity(Entity entity) async {
+    if (entity is Album) {
+      await removeAlbumFromDatabase(entity);
+    }
   }
 
   Future<void> removeAlbumFromDatabase(Album album) async {
@@ -97,6 +104,13 @@ class SupabaseConfig with ChangeNotifier {
     }
   }
 
+  Future<String> addEntityToDatabase(Entity entity) async {
+    if (entity is Album) {
+      return await addAlbumToDatabase(entity);
+    }
+    throw Exception('Unsupported entity type');
+  }
+
   Future<String> addAlbumToDatabase(Album album) async {
     try {
       final response = await _client.from('albums').select().eq("id", album.id);
@@ -148,7 +162,7 @@ class SupabaseConfig with ChangeNotifier {
         'rating': 0,
       });
       debugPrint("${album.id} was added to user ");
-      return albumAdded(album);
+      return entityAdded(album);
     } on PostgrestException catch (e) {
       if (e.code == "23505") {
         debugPrint("This entry already exists");
@@ -215,20 +229,10 @@ class SupabaseConfig with ChangeNotifier {
 
     loggedInUser.logoutUser();
     _isUserLoggedIn = false;
-    storage.delete(key: "email");
-    storage.delete(key: 'password');
     notifyListeners();
   }
 
-  Future<void> storeCredentials(String email, String password) async {
-    await storage.write(key: 'email', value: email);
-    await storage.write(key: 'password', value: password);
-  }
-
-  Future<bool> isKeptLogin() async {
-    final email = await storage.read(key: 'email');
-    final password = await storage.read(key: 'password');
-
+  Future<bool> isKeptLogin(String? email, String? password) async {
     if (email == null || password == null) {
       return false;
     } else {

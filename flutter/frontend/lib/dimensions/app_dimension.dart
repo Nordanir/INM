@@ -45,12 +45,6 @@ class AppDimensions {
 
   static Size minWindowSize() => Size(1550, 850);
 
-  static const double smallFontSize = 8;
-  static const double normalFontSize = 16;
-  static const double emphasizedFontSize = 24;
-
-  static double normalFontWeight = 1;
-  static double emphasizedFontWeight = 1;
 
   static EdgeInsets smallPadding = EdgeInsets.all(8);
   static EdgeInsets normalPadding = EdgeInsets.all(16);
@@ -71,8 +65,7 @@ class AppDimensions {
   static double narrowBorderWidth = 4;
   static double wideBorderWidth = 8;
 
-  static const FontWeight normalWeight = FontWeight.w600;
-  static const FontWeight emphasizedWeight = FontWeight.w900;
+
 
   static BoxShadow containershadow = BoxShadow(
     color: deepBlueHighLight.withValues(alpha: 0.5),

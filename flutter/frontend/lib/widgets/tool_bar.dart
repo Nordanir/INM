@@ -3,10 +3,13 @@ import 'package:frontend/constants/colors.dart';
 import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/dimensions/content_list_dimensions.dart';
 import 'package:frontend/dimensions/tool_bar_dimension.dart';
-import 'package:frontend/providers/selection_provider.dart';
+import 'package:frontend/providers/display_provider.dart';
+import 'package:frontend/providers/storage_provider.dart';
 import 'package:frontend/providers/superbase_config.dart';
 import 'package:frontend/providers/album_provider.dart';
 import 'package:frontend/providers/search_provider.dart';
+import 'package:frontend/themes/text_theme.dart';
+import 'package:frontend/utils/text_display_widgets.dart';
 import 'package:provider/provider.dart';
 
 class ToolBar extends StatefulWidget {
@@ -74,11 +77,11 @@ class _ToggleAscOrDesc extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final albumProvider = Provider.of<AlbumProvider>(context);
+    final displayProvider = Provider.of<DisplayProvider>(context);
     return GestureDetector(
       onTap: () {
         onToggle();
-        albumProvider.sortAlbumsBy(sortParam, isAscending);
+        displayProvider.sortAlbumsBy(sortParam, isAscending);
       },
       child: Container(
         width: ToolBarDimensions.toolBarHeight(context) * .5,
@@ -121,7 +124,8 @@ class _ChangeOrderState extends State<_ChangeOrder> {
   String displayText = "Sort";
   @override
   Widget build(BuildContext context) {
-    final albumProvider = Provider.of<AlbumProvider>(context, listen: false);
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final displayProvider = Provider.of<DisplayProvider>(context);
     return Container(
       height: ToolBarDimensions.toolBarHeight(context) * .5,
       decoration: BoxDecoration(
@@ -139,6 +143,7 @@ class _ChangeOrderState extends State<_ChangeOrder> {
       ),
 
       child: PopupMenuButton<String>(
+        tooltip: null,
         style: ButtonStyle(
           backgroundColor: WidgetStatePropertyAll<Color>(secondaryBlue),
         ),
@@ -148,7 +153,7 @@ class _ChangeOrderState extends State<_ChangeOrder> {
             .toList(),
         onSelected: (value) {
           widget.setParam(value);
-          albumProvider.sortAlbumsBy(value, widget.isAscending);
+          displayProvider.sortAlbumsBy(value, widget.isAscending);
           setDisplayText(value);
         },
         position: PopupMenuPosition.under,
@@ -157,7 +162,7 @@ class _ChangeOrderState extends State<_ChangeOrder> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(style: TextStyle(fontSize: 12), displayText),
+              DisplayText(text: displayText, textStyle: textTheme.bodySmall),
               Icon(Icons.arrow_drop_down),
             ],
           ),
@@ -170,12 +175,17 @@ class _ChangeOrderState extends State<_ChangeOrder> {
 class _SearchInAlbums extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final currentTheme = Theme.of(context);
     final albumProvider = Provider.of<AlbumProvider>(context);
+    final displayProvider = Provider.of<DisplayProvider>(context);
     return Container(
       height: ToolBarDimensions.toolBarHeight(context) * .6,
       margin: EdgeInsets.only(right: 40),
       width: ContentListDimensions.albumListPanelWidth(context) * .4,
       child: TextField(
+        style: currentTheme.textTheme.bodySmall?.copyWith(
+          color: theme.hintColor,
+        ),
         decoration: InputDecoration(
           filled: true,
           fillColor: Colors.white30,
@@ -190,7 +200,7 @@ class _SearchInAlbums extends StatelessWidget {
           ),
         ),
         onSubmitted: (value) {
-          albumProvider.searchInAlbums(value);
+          displayProvider.searchInAlbums(value, albumProvider.getAllAlbums());
         },
       ),
     );
@@ -248,9 +258,13 @@ class LogoutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final supabase = Provider.of<SupabaseConfig>(context);
+    final storage = Provider.of<StorageProvider>(context, listen: false);
+    final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     return ElevatedButton(
       onPressed: () {
+        searchProvider.agentEmail = null;
         supabase.logout();
+        storage.deleteUserFromStorage();
       },
 
       style: _toolBarButtonStyle,
@@ -267,13 +281,15 @@ class HomeButton extends StatelessWidget {
     final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
     final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
     final searchProvider = Provider.of<SearchProvider>(context, listen: true);
-    final selectionProvider = Provider.of<SelectionProvider>(context);
+    final displayProvider = Provider.of<DisplayProvider>(context);
     return ElevatedButton(
       style: _toolBarButtonStyle,
       onPressed: () async {
-        albumProvider.displayingAlbums = await supabaseConfig.retrieveAlbums();
+        final entities = await supabaseConfig.retrieveAlbums();
+        albumProvider.albums = entities;
+        displayProvider.displayEntities = entities;
         searchProvider.isSearching = false;
-        selectionProvider.changeSelectedAlbum(null);
+        displayProvider.changeSelectedEntity(null);
       },
       child: Icon(size: ToolBarDimensions.navBarButtonIconSize(), Icons.home),
     );

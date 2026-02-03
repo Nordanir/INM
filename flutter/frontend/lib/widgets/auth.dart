@@ -3,8 +3,10 @@ import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/widget_text.dart';
 import 'package:frontend/dimensions/auth_panel.dart';
+import 'package:frontend/providers/search_provider.dart';
+import 'package:frontend/providers/storage_provider.dart';
 import 'package:frontend/providers/superbase_config.dart' show SupabaseConfig;
-import 'package:frontend/widgets/info_panel.dart';
+import 'package:frontend/utils/text_display_widgets.dart';
 import 'package:provider/provider.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -74,6 +76,8 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    final currentTheme = Theme.of(context).textTheme;
+    final storage = Provider.of<StorageProvider>(context, listen: false);
     final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
     return Column(
       children: [
@@ -98,7 +102,7 @@ class _LoginState extends State<Login> {
                   });
                 },
               ),
-              DisplayText(text: rememberMe),
+              DisplayText(text: rememberMe, textStyle: currentTheme.bodyLarge),
             ],
           ),
         ),
@@ -114,9 +118,11 @@ class _LoginState extends State<Login> {
 
             showSnackBar(response.$2, context);
             if (response.$1) {
+              Provider.of<SearchProvider>(context, listen: false).agentEmail =
+                  emailController.text.trim();
               supabaseConfig.successfulLogin();
               if (isKeepLogin) {
-                await supabaseConfig.storeCredentials(
+                storage.storeUserInStorage(
                   emailController.text,
                   passwordController.text,
                 );
@@ -213,16 +219,19 @@ class InputField extends StatefulWidget {
 class _InputFieldState extends State<InputField> {
   @override
   Widget build(BuildContext context) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
     return TextFormField(
-      style: textStyle(AppDimensions.normalFontSize),
+      style: textTheme.bodyMedium,
 
       onChanged: widget.onChanged,
       obscureText: widget.obscureText,
       controller: widget.controller,
       decoration: InputDecoration(
         labelText: widget.title,
-        labelStyle: textStyle(AppDimensions.normalFontSize),
-        hintStyle: textStyle(AppDimensions.normalFontSize),
+        labelStyle: textTheme.labelMedium,
+        hintStyle: textTheme.bodyMedium?.copyWith(
+          color: black.withValues(alpha: .7),
+        ),
         focusedBorder: OutlineInputBorder(
           borderRadius: AuthPanelDimensions.inputBorderRadius,
           borderSide: BorderSide(color: deepAccent),
@@ -258,6 +267,7 @@ class _AuthButtonState extends State<AuthButton> {
   bool isHovered = false;
   @override
   Widget build(BuildContext context) {
+    final currentTheme = Theme.of(context).textTheme;
     return MouseRegion(
       onExit: (_) {
         hover();
@@ -275,7 +285,10 @@ class _AuthButtonState extends State<AuthButton> {
           minimumSize: const Size(400, 50),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         ),
-        child: DisplayText(text: widget.buttonText),
+        child: DisplayText(
+          text: widget.buttonText,
+          textStyle: currentTheme.bodyLarge,
+        ),
       ),
     );
   }

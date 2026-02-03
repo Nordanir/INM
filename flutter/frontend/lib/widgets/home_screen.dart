@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/classes/album.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/dimensions/content_list_dimensions.dart';
+import 'package:frontend/providers/display_provider.dart';
 import 'package:frontend/providers/search_provider.dart';
+import 'package:frontend/providers/storage_provider.dart';
 import 'package:frontend/providers/superbase_config.dart';
 import 'package:frontend/widgets/album_panel.dart';
 import 'package:frontend/providers/album_provider.dart';
@@ -16,15 +17,22 @@ import 'package:provider/provider.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  Future<bool> getUser(BuildContext context) async {
+    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
+    final storage = Provider.of<StorageProvider>(context, listen: false);
+    final (String email, String password) = await storage.readUserFromStorage();
+    final response = await supabaseConfig.isKeptLogin(email, password);
+    return response;  
+  }
+
   @override
   Widget build(BuildContext context) {
-    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
-
     return FutureBuilder<bool>(
-      future: supabaseConfig.isKeptLogin(),
+      future: getUser(context),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
         } else {
           return Consumer<SupabaseConfig>(
             builder: (context, supabaseConfig, child) {
@@ -36,6 +44,7 @@ class HomeScreen extends StatelessWidget {
             },
           );
         }
+        return const Center(child: CircularProgressIndicator());
       },
     );
   }
@@ -47,25 +56,26 @@ class _BuildHomeScreen extends StatefulWidget {
 }
 
 class _BuildHomeScreenState extends State<_BuildHomeScreen> {
-  bool isLoading = true;
+  bool isLoading = true;  
 
   @override
-  void initState() {
-    super.initState();
-    _loadAlbums();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (isLoading) {
+      _loadAlbums();
+    }
   }
 
   Future<void> _loadAlbums() async {
     try {
       final albumProvider = Provider.of<AlbumProvider>(context, listen: false);
-
+      final displayProvider = Provider.of<DisplayProvider>(context);
       albumProvider.albums = await Provider.of<SupabaseConfig>(
         context,
         listen: false,
       ).retrieveAlbums();
-      
 
-      albumProvider.displayingAlbums = albumProvider.albums;
+      displayProvider.displayEntities = albumProvider.albums;
     } finally {
       setState(() {
         isLoading = false;
@@ -170,8 +180,8 @@ Widget _buildMainContent(BuildContext context) {
 }
 
 class PageButton extends StatelessWidget {
-  PageButton({super.key, required this.fowardOrBack});
-  bool fowardOrBack;
+  const PageButton({super.key, required this.fowardOrBack});
+  final bool fowardOrBack;
   @override
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context);

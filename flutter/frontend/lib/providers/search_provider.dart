@@ -2,21 +2,40 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:frontend/classes/album.dart';
+import 'package:frontend/classes/artist.dart';
+import 'package:frontend/classes/entity.dart';
 import 'package:frontend/classes/track.dart';
 import 'package:http/http.dart' as http;
 
+enum SearchCategories { release, artist }
+
 class SearchProvider extends ChangeNotifier {
-  Map<String, String> headers = {
+  Map<String, String> get headers => {
     'Accept': 'application/json',
-    'User-Agent': 'INM/1.0 (soosgabor0212@gmail.com)',
+    'User-Agent': 'INM/0.3 (${_agentEmail ?? ""})',
   };
+
+  String? _agentEmail;
+
+  String? get agentEmail => _agentEmail;
+  set agentEmail(String? email) {
+    _agentEmail = email;
+    notifyListeners();
+  }
 
   bool _isSearching = false;
   bool isSearchInProgress = false;
   final int _searchlimit = 15;
   int _offSet = 0;
 
-  final _searchCategory = "release";
+  String _searchCategory = "release-group";
+
+  String get searchCategory => _searchCategory;
+  set searchCategory(String category) {
+    _searchCategory = category;
+    notifyListeners();
+  }
+
   String _querry = "";
 
   final _searchBarFocusNode = FocusNode();
@@ -40,7 +59,7 @@ class SearchProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<Album>> searchFor() async {
+  Future<List<Entity>> search() async {
     if (_querry != "") {
       isSearchInProgress = true;
       final response = await http.get(
@@ -51,7 +70,15 @@ class SearchProvider extends ChangeNotifier {
       );
       final bodyJson = json.decode(response.body);
 
-      return await _parseRelease(bodyJson['releases']);
+      switch (searchCategory) {
+        case 'release-group':
+          return await _parseRelease(bodyJson['release-groups']);
+
+        case 'artist':
+          return await _parseArtist(bodyJson['artists']);
+        default:
+          return [];
+      }
     } else {
       return [];
     }
@@ -81,7 +108,10 @@ class SearchProvider extends ChangeNotifier {
 
   Future<List<Album>> _parseRelease(List<dynamic> releases) async {
     List<Album> albums = [];
-    for (var release in releases) {
+
+    for (var group in releases) {
+      final release = group['releases'][0];
+      print(release);
       final id = release['id'];
       final coverUrl = 'https://coverartarchive.org/release/$id/front-500.jpg';
 
@@ -89,7 +119,7 @@ class SearchProvider extends ChangeNotifier {
         id: id,
         title: release['title'],
         coverUrl: coverUrl,
-        numberOfTracks: release['track-count'],
+        numberOfTracks: release['track-count'], 
         tracks: await retrieveSongs(id),
         cover: Image.network(
           coverUrl,
@@ -115,6 +145,15 @@ class SearchProvider extends ChangeNotifier {
     notifyListeners();
     return parseTracksFromJson(jsonBody);
   }
+  /*
+  List<Album> retriveArtistReleases(String artistId) async{
+    final releasesResponse = await http.get(Uri.parse(
+    'https://musicbrainz.org/ws/2/release?artist=$artistId&type=album&fmt=json&limit=100',
+
+  ));
+
+  }
+ */
 
   List<Track> parseTracksFromJson(Map<String, dynamic> json) {
     List<Track> tracks = [];
@@ -156,5 +195,14 @@ class SearchProvider extends ChangeNotifier {
     }
 
     return tracks;
+  }
+
+  Future<List<Artist>> _parseArtist(List<dynamic> artistsJson) async {
+    List<Artist> artists = [];
+    for (var artist in artistsJson) {
+      print(artist);
+      artists.add(Artist.fromJson(artist));
+    }
+    return artists;
   }
 }

@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/classes/artist.dart';
 import 'package:frontend/classes/entity.dart';
 import 'package:frontend/classes/track.dart';
 
 class Album extends Entity {
-  final String title;
   int duration;
   final int numberOfTracks;
   final String coverUrl;
   List<Track> tracks;
   Image? cover;
+  List<Artist> artists = [];
 
   void updateTracks(List<Track> newTracks) {
     tracks = newTracks;
@@ -17,7 +18,7 @@ class Album extends Entity {
 
   Album({
     required super.id,
-    required this.title,
+    required super.title,
     required this.coverUrl,
     required this.numberOfTracks,
     this.duration = 0,
@@ -48,6 +49,11 @@ class Album extends Entity {
         json['cover_url'],
         errorBuilder: (context, error, stackTrace) {
           return Image(image: AssetImage('assets/default.png'));
+        },
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );

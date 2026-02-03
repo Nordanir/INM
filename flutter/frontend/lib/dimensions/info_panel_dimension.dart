@@ -11,10 +11,10 @@ class InfoPanelDimensions {
 
   // Closing track info button
   static double closeTrackInfoButtonWidth(BuildContext context) =>
-      infoPanelWidth(context) * .05;
+      infoPanelWidth(context) * .07;
 
   static double closeTrackInfoButtonHeight(BuildContext context) =>
-      infoPanelWidth(context) * .05;
+      infoPanelWidth(context) * .07;
 
   // Track list
 

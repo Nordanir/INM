@@ -1,7 +1,6 @@
 import 'package:frontend/classes/entity.dart';
 
 class Track extends Entity {
-  final String title;
   final int duration;
   final int numberOnTheAlbum;
   final bool isALive;
@@ -9,7 +8,7 @@ class Track extends Entity {
 
   Track({
     required super.id,
-    required this.title,
+    required super.title,
     this.duration = 0,
     required this.numberOnTheAlbum,
     this.isALive = false,
