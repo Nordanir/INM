@@ -82,8 +82,8 @@ class SupabaseConfig with ChangeNotifier {
             });
 
         // 2. Delete tracks (one by one with error handling)
-        debugPrint('Deleting ${album.tracks.length} tracks...');
-        for (final track in album.tracks) {
+        debugPrint('Deleting ${album._tracks.length} tracks...');
+        for (final track in album._tracks) {
           try {
             await _client.from('tracks').delete().eq('id', track.id);
           } catch (e) {
@@ -120,26 +120,26 @@ class SupabaseConfig with ChangeNotifier {
           'id': album.id,
           'title': album.title,
           'cover_url': album.coverUrl,
-          'number_of_tracks': album.numberOfTracks,
-          'duration': album.duration,
+          'number_of_tracks': album._numberOfTracks,
+          'duration': album._durationInSeconds,
         });
         debugPrint("${album.title} added into albums");
-        final trackInserts = album.tracks.map((track) {
+        final trackInserts = album._tracks.map((track) {
           debugPrint("Inserting track: ${track.title}");
           return _client.from('tracks').insert({
             // Explicit return
             'id': track.id,
             'title': track.title,
-            'duration': track.duration,
+            'duration': track.durationInSeconds,
             'no_on_the_album': track.numberOnTheAlbum,
-            'is_a_live': track.isALive,
-            'is_a_single': track.isASingle,
+            'is_a_live': track.live,
+            'is_a_single': track.single,
           });
         }).toList();
 
         await Future.wait(trackInserts);
 
-        final relationshipInserts = album.tracks
+        final relationshipInserts = album._tracks
             .map(
               (track) => _client.from('tracks_of_album').insert({
                 'album_id': album.id,
@@ -152,7 +152,7 @@ class SupabaseConfig with ChangeNotifier {
         await Future.wait(relationshipInserts);
 
         debugPrint(
-          'Successfully added album with ${album.tracks.length} tracks',
+          'Successfully added album with ${album._tracks.length} tracks',
         );
       }
 

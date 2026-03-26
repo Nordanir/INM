@@ -98,12 +98,12 @@ class _AlbumInfoState extends State<AlbumInfo> {
                         textStyle: currentTheme.titleMedium!,
                       ),
                       DisplayText(
-                        text: displayDuration(widget.album.duration),
+                        text: displayDuration(widget.album._durationInSeconds),
                         letterSpacing: 2.5,
                         textStyle: currentTheme.bodyMedium,
                       ),
                       DisplayText(
-                        text: widget.album.numberOfTracks.toString(),
+                        text: widget.album._numberOfTracks.toString(),
                         textAlign: TextAlign.left,
                         textStyle: currentTheme.bodyMedium,
                         letterSpacing: 2.5,
@@ -144,7 +144,7 @@ class _AlbumInfoState extends State<AlbumInfo> {
               ),
             ),
             SizedBox(height: AppDimensions.normalSpacing(context)),
-            (widget.album.tracks.isNotEmpty)
+            (widget.album._tracks.isNotEmpty)
                 ? DisplayTracks(album: widget.album)
                 : DisplayText(
                     text: noTracksAvailable,
@@ -191,10 +191,10 @@ class DisplayTracks extends StatelessWidget {
       height: InfoPanelDimensions.trackListHeight(context),
       child: ListView.separated(
         separatorBuilder: (context, index) => SizedBox(height: 16),
-        itemCount: album.tracks.length,
+        itemCount: album._tracks.length,
         scrollDirection: Axis.vertical,
         itemBuilder: (context, int index) {
-          return TrackCard(track: album.tracks[index]);
+          return TrackCard(track: album._tracks[index]);
         },
       ),
     );
@@ -256,7 +256,7 @@ class _TrackCardState extends State<TrackCard> {
               Positioned(
                 left: 10,
                 child: DisplayText(
-                  text: '${widget.track.numberOnTheAlbum}.',
+                  text: '${widget.track._numberOnTheAlbum}.',
                   textStyle: currentTheme.bodyMedium,
                 ),
               ),
@@ -337,15 +337,15 @@ class TrackInfo extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   DisplayText(
-                    text: displayDuration(track.duration),
+                    text: displayDuration(track._durationInSeconds),
                     textStyle: currentTheme.bodyMedium,
                   ),
-                  if (track.isASingle)
+                  if (track._single)
                     DisplayText(
                       text: "Single",
                       textStyle: currentTheme.labelMedium,
                     ),
-                  if (track.isALive)
+                  if (track._live)
                     DisplayText(
                       text: "Live",
                       textStyle: currentTheme.labelMedium,

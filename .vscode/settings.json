@@ -1,3 +1,6 @@
 {
-    "cmake.sourceDirectory": "C:/Users/gaybor/Projects/IMNOTMUSIC/flutter/frontend/linux"
+    "cmake.sourceDirectory": "C:/Users/gaybor/Projects/IMNOTMUSIC/flutter/frontend/linux",
+    "dart.completeFunctionCalls": true,
+  "editor.semanticHighlighting.enabled": true,
+  "editor.linkedEditing": true
 }

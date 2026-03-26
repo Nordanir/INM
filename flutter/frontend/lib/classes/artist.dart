@@ -1,17 +1,14 @@
-import 'dart:ui';
-
 import 'package:frontend/classes/album.dart';
 import 'package:frontend/classes/entity.dart';
 import 'package:frontend/utils/time_display.dart';
 
 class Artist extends Entity {
   final List<Album> albums = [];
-  Image? coverImage;
   final bool? isActive;
   final String? area;
   final String? country;
-  final DateTime? beginDate;
-  final DateTime? endDate;
+  final DateTime? activeFrom;
+  final DateTime? activeUntil;
 
   Artist({
     required super.id,
@@ -19,9 +16,13 @@ class Artist extends Entity {
     required this.isActive,
     this.area,
     this.country,
-    this.beginDate,
-    this.endDate,
+    this.activeFrom,
+    this.activeUntil,
   });
+
+  
+
+  // OBSOLETE : must be rewritten to fit the new scheme
 
   factory Artist.fromJson(Map<String, dynamic> json) {
     return Artist(
@@ -30,8 +31,8 @@ class Artist extends Entity {
       isActive: json['ended'],
       area: json['area'] != null ? json['area']['name'] : null,
       country: json['country'],
-      beginDate: fromStringToDate(json['begin']),
-      endDate: fromStringToDate(json['end']),
+      activeFrom: fromStringToDate(json['begin']),
+      activeUntil: fromStringToDate(json['end']),
     );
   }
 

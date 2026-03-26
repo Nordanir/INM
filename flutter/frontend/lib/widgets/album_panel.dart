@@ -57,7 +57,7 @@ class _AlbumCardState extends State<AlbumCard> {
               children: [
                 Icon(Icons.timer, size: normalFontSize(context)),
                 DisplayText(
-                  text: displayDuration(widget.album.duration),
+                  text: displayDuration(widget.album._durationInSeconds),
                   textAlign: TextAlign.center,
                   textStyle: currentTheme.textTheme.bodySmall?.copyWith(
                     color: currentTheme.hintColor,
@@ -70,7 +70,7 @@ class _AlbumCardState extends State<AlbumCard> {
             Row(
               children: [
                 DisplayText(
-                  text: widget.album.numberOfTracks.toString(),
+                  text: widget.album._numberOfTracks.toString(),
                   textAlign: TextAlign.center,
                   textStyle: currentTheme.textTheme.bodySmall?.copyWith(
                     color: currentTheme.hintColor,

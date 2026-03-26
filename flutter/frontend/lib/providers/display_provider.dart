@@ -57,13 +57,13 @@ class DisplayProvider with ChangeNotifier {
         break;
       case "Duration":
         displayEntities.sort(
-          (a, b) => (a as Album).duration.compareTo((b as Album).duration),
+          (a, b) => (a as Album).durationInSeconds.compareTo((b as Album)._durationInSeconds),
         );
         break;
       case "Number of tracks":
         displayEntities.sort(
-          (a, b) => (a as Album).numberOfTracks.compareTo(
-            (b as Album).numberOfTracks,
+          (a, b) => (a as Album)._numberOfTracks.compareTo(
+            (b as Album)._numberOfTracks,
           ),
         );
         break;

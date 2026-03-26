@@ -4,6 +4,20 @@ class Entity with ChangeNotifier {
   double? _rating;
   String _id;
   String _title;
+  Image? _cover;
+  String? _coverUrl;
+
+  String? get coverUrl => _coverUrl;
+  set coverUrl(String? url) {
+    _coverUrl = url;
+    notifyListeners();
+  }
+
+  Image? get cover => _cover;
+  set cover(Image? cover) {
+    _cover = cover;
+    notifyListeners();
+  }
 
   String get title => _title;
   set title(String title) {
@@ -17,13 +31,17 @@ class Entity with ChangeNotifier {
     notifyListeners();
   }
 
-  Entity({required String id, required String title})
+  Entity({required String id, required String title, String? coverUrl, Image? cover})
     : _id = id,
-      _title = title;
+      _title = title,
+      _coverUrl = coverUrl,
+      _cover = cover;
   set rating(double? rating) {
     _rating = rating;
     notifyListeners();
   }
 
   double? get rating => _rating;
+
+  
 }
