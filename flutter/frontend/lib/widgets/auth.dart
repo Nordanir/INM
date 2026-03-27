@@ -3,9 +3,9 @@ import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/widget_text.dart';
 import 'package:frontend/dimensions/auth_panel.dart';
+import 'package:frontend/providers/pocket_base_config.dart';
 import 'package:frontend/providers/search_provider.dart';
 import 'package:frontend/providers/storage_provider.dart';
-import 'package:frontend/providers/superbase_config.dart' show SupabaseConfig;
 import 'package:frontend/utils/text_display_widgets.dart';
 import 'package:provider/provider.dart';
 
@@ -28,7 +28,7 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: deepBlueHighLight,
-      body: Consumer<SupabaseConfig>(
+      body: Consumer<PocketBaseConfig>(
         builder: (context, supabase, child) {
           return Center(
             child: Container(
@@ -78,7 +78,6 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     final currentTheme = Theme.of(context).textTheme;
     final storage = Provider.of<StorageProvider>(context, listen: false);
-    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
     return Column(
       children: [
         InputField(controller: emailController, title: email),

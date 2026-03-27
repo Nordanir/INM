@@ -200,7 +200,6 @@ class SearchProvider extends ChangeNotifier {
   Future<List<Artist>> _parseArtist(List<dynamic> artistsJson) async {
     List<Artist> artists = [];
     for (var artist in artistsJson) {
-      print(artist);
       artists.add(Artist.fromJson(artist));
     }
     return artists;

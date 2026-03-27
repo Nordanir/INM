@@ -13,11 +13,14 @@ class PocketBaseConfig {
 
   static const String _albumsCollection = 'albums';
   static const String _tracksCollection = 'tracks';
+  static const String _usersCollection = 'users';
 
   static const Duration _timeoutDuration = Duration(seconds: 10);
 
   static final PocketBase _pocketBase = PocketBase(_pocketUrl);
 
+
+  
   /// Creates a new album record in the pocketbase collection
   ///
   /// [parameterName] [album] The album to be created
@@ -238,6 +241,65 @@ class PocketBaseConfig {
       rethrow;
     }
   }
+
+ /// Authenticates a user with the pocketbase collection using email and password
+  /// [parameterName] [email] The email of the user to be authenticated
+  /// [parameterName] [password] The password of the user to be authenticated
+ static Future<bool> login(String email, String password) async {
+    logger.d('Attempting to log in as $email');   
+    try {
+      await _pocketBase.collection(_usersCollection)
+          .authWithPassword(email, password)
+          .timeout(_timeoutDuration);
+      logger.i('Logged in successfully as $email');
+      return true;
+    } on ClientException catch (e) {
+      _parseAuthError(e); 
+      rethrow;
+    } catch (e) {
+      logger.e('Error logging in as $email: $e');
+      rethrow;
+    }
+  }
+
+  /// Logs out the currently authenticated user by clearing the authentication store
+   static Future<void> logout() async {
+    try {
+     _pocketBase.authStore.clear();
+      logger.i('Logged out successfully');
+    } on ClientException catch (e) {
+      _parseAuthError(e);
+      rethrow;
+    } catch (e) {
+      logger.e('Error logging out: $e');
+      rethrow;
+    }
+   }
+   /// Registers a new user in the pocketbase collection with the provided name, email, and password
+   /// [parameterName] [name] The name of the user to be registered
+   /// [parameterName] [email] The email of the user to be registered
+   /// [parameterName] [password] The password of the user to be registered
+   /// [parameterName] [passwordConfirm] The confirmation password of the user to be registered
+   static Future<void> register(String name, String email, String password, String passwordConfirm) async {
+    logger.d('Attempting to register user with email: $email');
+    try {
+      if (password != passwordConfirm) {
+        logger.e('Passwords do not match');
+        throw ArgumentError('Passwords do not match');
+      }
+      await _pocketBase.collection(_usersCollection).create(body: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'passwordConfirm': passwordConfirm,
+      }).timeout(_timeoutDuration);
+      logger.i('User registered successfully with email: $email');
+    } catch (e) {
+      logger.e('Error registering user with email $email: $e');
+      rethrow;
+    }
+   }
+
 }
 
 void main() {
@@ -270,6 +332,15 @@ void main() {
         logger.i('Test album and tracks deleted successfully');
       });
     });
+    test("registering user", () async {
+      final String testName = 'Test User';
+      final String testEmail = 'test${DateTime.now().millisecondsSinceEpoch}@example.com';
+      final String testPassword = 'password123';
+
+      await PocketBaseConfig.register(testName, testEmail, testPassword, testPassword);
+      await PocketBaseConfig.logout();
+        logger.i('Test user deleted successfully');
+    });
   });
 }
 
@@ -290,5 +361,28 @@ void _parsePocketBaseError(ClientException e) {
       logger.e("$status : $message");
     case _:
       logger.e("An error occurred: $status - $message");
+  }
+}
+
+void _parseAuthError(ClientException e) {
+  final data = e.response['data'] as Map<String, dynamic>?;
+  final status = e.response['status'] as int?;
+  
+  switch (status) {
+    case 400:
+      final message = data?['message'] as String? ?? 'Invalid request';
+      logger.e(message);
+      break;
+    case 401:
+      logger.e('Invalid email or password');
+      break;
+    case 403:
+      logger.e('Account disabled or email not verified');
+      break;
+    case 429:
+      logger.e('Too many attempts, please try again later');
+      break;
+    default:
+      logger.e('Status $status: ${data?['message'] ?? 'An error occurred'}');
   }
 }

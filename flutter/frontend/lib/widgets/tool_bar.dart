@@ -5,7 +5,6 @@ import 'package:frontend/dimensions/content_list_dimensions.dart';
 import 'package:frontend/dimensions/tool_bar_dimension.dart';
 import 'package:frontend/providers/display_provider.dart';
 import 'package:frontend/providers/storage_provider.dart';
-import 'package:frontend/providers/superbase_config.dart';
 import 'package:frontend/providers/album_provider.dart';
 import 'package:frontend/providers/search_provider.dart';
 import 'package:frontend/themes/text_theme.dart';
