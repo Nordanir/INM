@@ -5,7 +5,7 @@ class Track extends Entity {
   final int _numberOnTheAlbum;
   final bool _live;
   final bool _single;
-  final String _albumId;
+  final String? _albumId;
 
   int get durationInSeconds => _durationInSeconds;
 
@@ -15,7 +15,7 @@ class Track extends Entity {
 
   bool get single => _single;
 
-  String get albumId => _albumId;
+  String? get albumId => _albumId;
 
   void validateTrack() {
     if (durationInSeconds < 0) {

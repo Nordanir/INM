@@ -64,7 +64,6 @@ class PocketBaseConfig {
     Track track, [
     bool createAlbumForTrack = false,
   ]) async {
-    track.validateTrack();
     if (createAlbumForTrack) {
       try {
         logger.d('Creating album for track: ${track.title}');
@@ -94,6 +93,7 @@ class PocketBaseConfig {
           .collection(_tracksCollection)
           .create(
             body: {
+              'id': track.id,
               "durationInSeconds": track.durationInSeconds,
               "title": track.title,
               "numberOnTheAlbum": track.numberOnTheAlbum,
@@ -182,6 +182,62 @@ class PocketBaseConfig {
       return [];
     }
   }
+
+    /// Deletes an album record from the pocketbase collection, optionally deleting associated tracks
+    /// [parameterName] [album] The album to be deleted
+    /// [parameterName] [deleteTracks] If true, all tracks associated with the album will also be deleted
+
+  static Future<void> deleteAlbum(Album album, [bool deleteTracks = false]) async {
+    try{
+
+      if (deleteTracks){
+        logger.i('Deleting tracks on album ": ${album.title}');
+          for (Track track in album.tracks) {
+            await deleteTrack(track);
+          }
+      }
+      
+      logger.i('Deleting album : ${album.title}');
+      await _pocketBase.collection(_albumsCollection).delete(album.id).timeout(_timeoutDuration);
+
+      
+    }
+    on ArgumentError catch (e) {
+      logger.e('Validation error for ${album.title}: $e');
+      rethrow;
+    }
+    on ClientException catch (e) {
+      _parsePocketBaseError(e);
+      rethrow;
+    }
+    catch(e){
+      logger.e('Error deleting album ${album.title} : $e');
+      rethrow;  
+    }
+  }
+
+  /// Deletes a track record from the pocketbase collection
+  /// [parameterName] [track] The track to be deleted
+
+  static Future<void> deleteTrack(Track track) async{
+    try{
+      track.validateTrack();
+      logger.d('Deleting track : ${track.title}');
+      await _pocketBase.collection(_tracksCollection).delete(track.id).timeout(_timeoutDuration);
+    }
+    on ArgumentError catch (e) {
+      logger.e('Validation error for track ${track.title}: $e');
+      rethrow;
+    }
+    on ClientException catch (e) {
+      _parsePocketBaseError(e);
+      rethrow;
+    }
+    catch(e){
+      logger.e('Error deleting track ${track.title} : $e');
+      rethrow;
+    }
+  }
 }
 
 void main() {
@@ -209,6 +265,10 @@ void main() {
       final record = await PocketBaseConfig.createAlbum(testAlbum);
 
       expect(record.id, equals(testAlbum.id));
+
+      await PocketBaseConfig.deleteAlbum(testAlbum, true).then((_) {
+        logger.i('Test album and tracks deleted successfully');
+      });
     });
   });
 }
@@ -218,17 +278,17 @@ void main() {
 
 void _parsePocketBaseError(ClientException e) {
   final data = e.response['data'] as Map<String, dynamic>?;
+  final status = e.response['status'] as int?;
 
-  final code = data?['code'] as String?;
-  final message = data?['message'] as String?;
-  final errorCode = data?['id']['code'];
+  final message = data != null && data.isNotEmpty ? data['message'] as String : e.response['message'];
+  final errorCode = data != null && data.isNotEmpty ?  data['id']['code']  : "Unknown error code";
 
   switch (errorCode) {
     case "validation_not_unique":
       logger.e("An entity with same id already exists.");
     case null:
-      logger.e("$code : $message");
+      logger.e("$status : $message");
     case _:
-      logger.e("An error occurred: ${errorCode ?? data}");
+      logger.e("An error occurred: $status - $message");
   }
 }
