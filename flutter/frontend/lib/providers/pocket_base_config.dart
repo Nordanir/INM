@@ -276,29 +276,34 @@ class PocketBaseConfig {
     }
    }
    /// Registers a new user in the pocketbase collection with the provided name, email, and password
-   /// [parameterName] [name] The name of the user to be registered
+   /// [parameterName] [userName] The name of the user to be registered
    /// [parameterName] [email] The email of the user to be registered
    /// [parameterName] [password] The password of the user to be registered
    /// [parameterName] [passwordConfirm] The confirmation password of the user to be registered
-   static Future<void> register(String name, String email, String password, String passwordConfirm) async {
-    logger.d('Attempting to register user with email: $email');
-    try {
-      if (password != passwordConfirm) {
-        logger.e('Passwords do not match');
-        throw ArgumentError('Passwords do not match');
-      }
-      await _pocketBase.collection(_usersCollection).create(body: {
-        'name': name,
-        'email': email,
-        'password': password,
-        'passwordConfirm': passwordConfirm,
-      }).timeout(_timeoutDuration);
-      logger.i('User registered successfully with email: $email');
-    } catch (e) {
-      logger.e('Error registering user with email $email: $e');
-      rethrow;
+  static Future<void> register({
+    required String userName,
+    required String email,
+    required String password,
+    required String passwordConfirm,
+  }) async {
+   logger.d('Attempting to register user with email: $email');
+   try {
+    if (password != passwordConfirm) {
+      logger.e('Passwords do not match');
+      throw ArgumentError('Passwords do not match');
     }
+    await _pocketBase.collection(_usersCollection).create(body: {
+      'name': userName,
+      'email': email,
+      'password': password,
+      'passwordConfirm': passwordConfirm,
+    }).timeout(_timeoutDuration);
+    logger.i('User registered successfully with email: $email');
+   } catch (e) {
+    logger.e('Error registering user with email $email: $e');
+    rethrow;
    }
+  }
 
 }
 
@@ -337,7 +342,7 @@ void main() {
       final String testEmail = 'test${DateTime.now().millisecondsSinceEpoch}@example.com';
       final String testPassword = 'password123';
 
-      await PocketBaseConfig.register(testName, testEmail, testPassword, testPassword);
+      await PocketBaseConfig.register(userName: testName, email: testEmail, password: testPassword, passwordConfirm: testPassword);
       await PocketBaseConfig.logout();
         logger.i('Test user deleted successfully');
     });

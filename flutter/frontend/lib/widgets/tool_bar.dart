@@ -4,6 +4,7 @@ import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/dimensions/content_list_dimensions.dart';
 import 'package:frontend/dimensions/tool_bar_dimension.dart';
 import 'package:frontend/providers/display_provider.dart';
+import 'package:frontend/providers/pocket_base_config.dart';
 import 'package:frontend/providers/storage_provider.dart';
 import 'package:frontend/providers/album_provider.dart';
 import 'package:frontend/providers/search_provider.dart';
@@ -215,11 +216,7 @@ class _ProfileState extends State<_Profile> {
   Color textColor = Colors.black;
   @override
   Widget build(BuildContext context) {
-    final supabase = Provider.of<SupabaseConfig>(context);
-    final profile = Provider.of<SupabaseConfig>(
-      context,
-      listen: true,
-    ).currentProfile;
+   
     return SizedBox(
       width: ContentListDimensions.albumListPanelWidth(context) * .2,
       child: MouseRegion(
@@ -235,19 +232,13 @@ class _ProfileState extends State<_Profile> {
         },
         child: GestureDetector(
           onTap: () {
-            supabase.logout();
+            PocketBaseConfig.logout();
           },
-          child: Text(
-            profile.userName,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
+          
           ),
         ),
-      ),
-    );
+      );
+    
   }
 }
 
@@ -256,13 +247,12 @@ class LogoutButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final supabase = Provider.of<SupabaseConfig>(context);
     final storage = Provider.of<StorageProvider>(context, listen: false);
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     return ElevatedButton(
       onPressed: () {
         searchProvider.agentEmail = null;
-        supabase.logout();
+        PocketBaseConfig.logout();
         storage.deleteUserFromStorage();
       },
 
@@ -277,14 +267,13 @@ class HomeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
     final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
     final searchProvider = Provider.of<SearchProvider>(context, listen: true);
     final displayProvider = Provider.of<DisplayProvider>(context);
     return ElevatedButton(
       style: _toolBarButtonStyle,
       onPressed: () async {
-        final entities = await supabaseConfig.retrieveAlbums();
+        final entities = await PocketBaseConfig.getAlbums();
         albumProvider.albums = entities;
         displayProvider.displayEntities = entities;
         searchProvider.isSearching = false;

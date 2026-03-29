@@ -33,7 +33,7 @@ class Track extends Entity {
     required int numberOnTheAlbum,
     bool live = false,  
     bool single = false,
-    required String albumId,
+    String? albumId,
   }) : _albumId = albumId, _single = single, _numberOnTheAlbum = numberOnTheAlbum, _live = live, _durationInSeconds = durationInSeconds;
   // OBSOLETE : must be rewritten to fit the new scheme
 

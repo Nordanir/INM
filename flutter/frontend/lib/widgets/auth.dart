@@ -4,7 +4,6 @@ import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/widget_text.dart';
 import 'package:frontend/dimensions/auth_panel.dart';
 import 'package:frontend/providers/pocket_base_config.dart';
-import 'package:frontend/providers/search_provider.dart';
 import 'package:frontend/providers/storage_provider.dart';
 import 'package:frontend/utils/text_display_widgets.dart';
 import 'package:provider/provider.dart';
@@ -28,27 +27,21 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: deepBlueHighLight,
-      body: Consumer<PocketBaseConfig>(
-        builder: (context, supabase, child) {
-          return Center(
-            child: Container(
-              padding: AppDimensions.normalPadding,
-              width: InfoPanelDimensions.infoPanelWidth(context),
-              height: InfoPanelDimensions.infoPanelHeight(context),
-              decoration: BoxDecoration(
-                boxShadow: [AppDimensions.containershadow],
-                borderRadius: BorderRadius.all(
-                  AppDimensions.infoPanelBorderRadius,
-                ),
-                border: Border.all(color: black),
-                color: lightBlueHighlight,
-              ),
-              child: loginOrRegister
-                  ? Login(toggleLogin: toggleLoginOrRegister)
-                  : Register(toggleFunction: toggleLoginOrRegister),
-            ),
-          );
-        },
+      body: Center(
+        child: Container(
+          padding: AppDimensions.normalPadding,
+          width: InfoPanelDimensions.infoPanelWidth(context),
+          height: InfoPanelDimensions.infoPanelHeight(context),
+          decoration: BoxDecoration(
+            boxShadow: [AppDimensions.containershadow],
+            borderRadius: BorderRadius.all(AppDimensions.infoPanelBorderRadius),
+            border: Border.all(color: black),
+            color: lightBlueHighlight,
+          ),
+          child: loginOrRegister
+              ? Login(toggleLogin: toggleLoginOrRegister)
+              : Register(toggleFunction: toggleLoginOrRegister),
+        ),
       ),
     );
   }
@@ -110,22 +103,11 @@ class _LoginState extends State<Login> {
 
         AuthButton(
           onPressed: () async {
-            final response = await supabaseConfig.signInWithEmail(
-              emailController.text.trim(),
-              passwordController.text.trim(),
-            );
-
-            showSnackBar(response.$2, context);
-            if (response.$1) {
-              Provider.of<SearchProvider>(context, listen: false).agentEmail =
-                  emailController.text.trim();
-              supabaseConfig.successfulLogin();
-              if (isKeepLogin) {
-                storage.storeUserInStorage(
-                  emailController.text,
-                  passwordController.text,
-                );
-              }
+            if (isKeepLogin) {
+              storage.storeUserInStorage(
+                emailController.text,
+                passwordController.text,
+              );
             }
           },
           buttonText: loginButton,
@@ -150,18 +132,19 @@ class _RegisterState extends State<Register> {
   final userNameController = TextEditingController();
   final passWordController = TextEditingController();
   final emailController = TextEditingController();
+  final passwordConfirmController = TextEditingController();
 
   @override
   void dispose() {
     userNameController.dispose();
     passWordController.dispose();
     emailController.dispose();
+    passwordConfirmController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final supabaseConfig = Provider.of<SupabaseConfig>(context, listen: false);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -173,20 +156,24 @@ class _RegisterState extends State<Register> {
           controller: passWordController,
         ),
         SizedBox(height: AppDimensions.normalSpacing(context)),
+        InputField(
+          title: confirmPassword,
+          obscureText: true,
+          controller: passwordConfirmController,
+        ),
+        SizedBox(height: AppDimensions.normalSpacing(context)),
         InputField(title: username, controller: userNameController),
 
         Spacer(),
         AuthButton(
           onPressed: () async {
-            final response = await supabaseConfig.signUpWithEmail(
-              emailController.text.trim(),
-              passWordController.text.trim(),
-              userNameController.text.trim(),
+            await PocketBaseConfig.register(
+              email : emailController.text.trim(),
+              password : passWordController.text.trim(),
+              userName: userNameController.text.trim(),
+              passwordConfirm: passwordConfirmController.text.trim(),
             );
-            showSnackBar(response.$2, context);
-            if (response.$1) {
-              widget.toggleFunction();
-            }
+            widget.toggleFunction();
           },
           buttonText: registerButton,
         ),

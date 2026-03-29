@@ -54,3 +54,5 @@ String titleNthTrackOnTheAlbum(Album album, Track track) =>
     "${album.title} - ${track.numberOnTheAlbum}. track";
 
 String noEntriesFound = "No entries found";
+
+String confirmPassword = "Confirm password";

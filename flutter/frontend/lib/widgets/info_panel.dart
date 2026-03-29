@@ -6,12 +6,13 @@ import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/widget_text.dart';
 import 'package:frontend/providers/display_provider.dart';
-import 'package:frontend/providers/superbase_config.dart';
+import 'package:frontend/providers/pocket_base_config.dart';
 import 'package:frontend/providers/search_provider.dart';
 import 'package:frontend/themes/text_theme.dart';
 import 'package:frontend/utils/text_display_widgets.dart';
 import 'package:frontend/widgets/auth.dart';
 import 'package:frontend/utils/time_display.dart';
+import 'package:pocketbase/pocketbase.dart';
 import 'package:provider/provider.dart';
 
 class InfoPanel extends StatelessWidget {
@@ -98,12 +99,12 @@ class _AlbumInfoState extends State<AlbumInfo> {
                         textStyle: currentTheme.titleMedium!,
                       ),
                       DisplayText(
-                        text: displayDuration(widget.album._durationInSeconds),
+                        text: displayDuration(widget.album.durationInSeconds),
                         letterSpacing: 2.5,
                         textStyle: currentTheme.bodyMedium,
                       ),
                       DisplayText(
-                        text: widget.album._numberOfTracks.toString(),
+                        text: widget.album.numberOfTracks.toString(),
                         textAlign: TextAlign.left,
                         textStyle: currentTheme.bodyMedium,
                         letterSpacing: 2.5,
@@ -144,7 +145,7 @@ class _AlbumInfoState extends State<AlbumInfo> {
               ),
             ),
             SizedBox(height: AppDimensions.normalSpacing(context)),
-            (widget.album._tracks.isNotEmpty)
+            (widget.album.tracks.isNotEmpty)
                 ? DisplayTracks(album: widget.album)
                 : DisplayText(
                     text: noTracksAvailable,
@@ -191,10 +192,10 @@ class DisplayTracks extends StatelessWidget {
       height: InfoPanelDimensions.trackListHeight(context),
       child: ListView.separated(
         separatorBuilder: (context, index) => SizedBox(height: 16),
-        itemCount: album._tracks.length,
+        itemCount: album.tracks.length,
         scrollDirection: Axis.vertical,
         itemBuilder: (context, int index) {
-          return TrackCard(track: album._tracks[index]);
+          return TrackCard(track: album.tracks[index]);
         },
       ),
     );
@@ -256,7 +257,7 @@ class _TrackCardState extends State<TrackCard> {
               Positioned(
                 left: 10,
                 child: DisplayText(
-                  text: '${widget.track._numberOnTheAlbum}.',
+                  text: '${widget.track.numberOnTheAlbum}.',
                   textStyle: currentTheme.bodyMedium,
                 ),
               ),
@@ -337,15 +338,15 @@ class TrackInfo extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   DisplayText(
-                    text: displayDuration(track._durationInSeconds),
+                    text: displayDuration(track.durationInSeconds),
                     textStyle: currentTheme.bodyMedium,
                   ),
-                  if (track._single)
+                  if (track.single)
                     DisplayText(
                       text: "Single",
                       textStyle: currentTheme.labelMedium,
                     ),
-                  if (track._live)
+                  if (track.live)
                     DisplayText(
                       text: "Live",
                       textStyle: currentTheme.labelMedium,
@@ -377,7 +378,6 @@ class AddOrRemoveEntryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context, listen: true);
-    final supabase = Provider.of<SupabaseConfig>(context, listen: true);
     final displayProvider = Provider.of<DisplayProvider>(context);
 
     return SizedBox(
@@ -403,18 +403,8 @@ class AddOrRemoveEntryButton extends StatelessWidget {
         ),
         onPressed: () async {
           if (searchProvider.isSearching) {
-            final response = await Provider.of<SupabaseConfig>(
-              context,
-              listen: false,
-            ).addEntityToDatabase(displayProvider.selectedEntity!);
-
-            showSnackBar(response, context);
+            
           } else {
-            await supabase.removeEntity(displayProvider.selectedEntity!);
-            showSnackBar(
-              entityDeleted(displayProvider.selectedEntity!),
-              context,
-            );
             displayProvider.changeSelectedEntity(null);
           }
         },
@@ -568,10 +558,6 @@ class _RatingBoxState extends State<RatingBox> {
                 entity: widget.entity,
                 function: () async {
                   widget.entity.rating = i.toDouble() + 1;
-                  await Provider.of<SupabaseConfig>(
-                    context,
-                    listen: false,
-                  ).setRatingOfEntity(widget.entity, i.toDouble() + 1);
                   widget.onRated();
                 },
                 filled: i <= hoveredIndex,

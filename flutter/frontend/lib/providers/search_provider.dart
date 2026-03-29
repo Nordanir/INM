@@ -179,6 +179,7 @@ class SearchProvider extends ChangeNotifier {
                   title: title,
                   numberOnTheAlbum: position,
                   durationInSeconds: length,
+                  albumId: null
                 ),
               );
             }
