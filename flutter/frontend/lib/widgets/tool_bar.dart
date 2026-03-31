@@ -5,7 +5,6 @@ import 'package:frontend/dimensions/content_list_dimensions.dart';
 import 'package:frontend/dimensions/tool_bar_dimension.dart';
 import 'package:frontend/providers/display_provider.dart';
 import 'package:frontend/providers/pocket_base_config.dart';
-import 'package:frontend/providers/storage_provider.dart';
 import 'package:frontend/providers/album_provider.dart';
 import 'package:frontend/providers/search_provider.dart';
 import 'package:frontend/themes/text_theme.dart';
@@ -247,13 +246,11 @@ class LogoutButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final storage = Provider.of<StorageProvider>(context, listen: false);
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
     return ElevatedButton(
       onPressed: () {
         searchProvider.agentEmail = null;
         PocketBaseConfig.logout();
-        storage.deleteUserFromStorage();
       },
 
       style: _toolBarButtonStyle,

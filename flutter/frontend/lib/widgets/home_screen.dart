@@ -5,45 +5,29 @@ import 'package:frontend/dimensions/content_list_dimensions.dart';
 import 'package:frontend/providers/display_provider.dart';
 import 'package:frontend/providers/pocket_base_config.dart';
 import 'package:frontend/providers/search_provider.dart';
-import 'package:frontend/providers/storage_provider.dart';
 import 'package:frontend/widgets/album_panel.dart';
 import 'package:frontend/providers/album_provider.dart';
 import 'package:frontend/widgets/auth.dart';
 import 'package:frontend/widgets/info_panel.dart';
 import 'package:frontend/widgets/search_bar.dart';
 import 'package:frontend/widgets/tool_bar.dart';
-import 'package:pocketbase/pocketbase.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  Future<bool> getUser(BuildContext context) async {
-    final storage = Provider.of<StorageProvider>(context, listen: false);
-    final (String email, String password) = await storage.readUserFromStorage();
-    return true;  
-  }
+
 
   @override
   Widget build(BuildContext context) {
-    // return FutureBuilder<bool>(
-    //   future: getUser(context),
-    //   builder: (context, snapshot) {
-    //     if (snapshot.connectionState == ConnectionState.waiting) {
-    //       return const Center(child: CircularProgressIndicator());
-    //     } else if (snapshot.hasError) {
-    //     } else {
-          
-    //             return const AuthScreen();
-              
-          
+   
 
-    //     }
-    //     return const Center(child: CircularProgressIndicator());
-    //   },
-    // );
-
-    return AuthScreen();
+     return ValueListenableBuilder<bool>(
+      valueListenable: PocketBaseConfig.isLoggedInNotifier,
+      builder: (context, isLoggedIn, _) {
+        return isLoggedIn ? _BuildHomeScreen() : AuthScreen();
+      },
+    );
   }
 }
 

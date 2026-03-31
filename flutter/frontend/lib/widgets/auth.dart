@@ -4,9 +4,7 @@ import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/widget_text.dart';
 import 'package:frontend/dimensions/auth_panel.dart';
 import 'package:frontend/providers/pocket_base_config.dart';
-import 'package:frontend/providers/storage_provider.dart';
 import 'package:frontend/utils/text_display_widgets.dart';
-import 'package:provider/provider.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -70,7 +68,6 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     final currentTheme = Theme.of(context).textTheme;
-    final storage = Provider.of<StorageProvider>(context, listen: false);
     return Column(
       children: [
         InputField(controller: emailController, title: email),
@@ -101,17 +98,10 @@ class _LoginState extends State<Login> {
 
         Spacer(),
 
-        AuthButton(
-          onPressed: () async {
-            if (isKeepLogin) {
-              storage.storeUserInStorage(
-                emailController.text,
-                passwordController.text,
-              );
-            }
-          },
-          buttonText: loginButton,
-        ),
+        SizedBox(height: AppDimensions.largeSpacing(context)),
+        AuthButton(onPressed: () async {
+          await PocketBaseConfig.login(emailController.text.trim(), passwordController.text.trim());
+        }, buttonText: loginButton),
 
         SizedBox(height: AppDimensions.largeSpacing(context)),
         AuthButton(onPressed: widget.toggleLogin, buttonText: registerButton),

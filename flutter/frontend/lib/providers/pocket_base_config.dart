@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/classes/album.dart';
 import 'package:frontend/classes/track.dart';
 import 'package:frontend/utils/logger.dart';
@@ -10,17 +12,27 @@ import 'package:flutter_test/flutter_test.dart';
 
 class PocketBaseConfig {
   static const String _pocketUrl = 'http://127.0.0.1:8090/';
+  static const FlutterSecureStorage _storage = FlutterSecureStorage();
+
+  static final ValueNotifier<bool> isLoggedInNotifier = ValueNotifier(false);
+  static const _tokenKey = 'pb_auth';
 
   static const String _albumsCollection = 'albums';
   static const String _tracksCollection = 'tracks';
   static const String _usersCollection = 'users';
 
+
+
   static const Duration _timeoutDuration = Duration(seconds: 10);
 
-  static final PocketBase _pocketBase = PocketBase(_pocketUrl);
+  static  final PocketBase _pocketBase = PocketBase(_pocketUrl);
 
 
   
+  
+    
+
+
   /// Creates a new album record in the pocketbase collection
   ///
   /// [parameterName] [album] The album to be created
@@ -245,12 +257,16 @@ class PocketBaseConfig {
  /// Authenticates a user with the pocketbase collection using email and password
   /// [parameterName] [email] The email of the user to be authenticated
   /// [parameterName] [password] The password of the user to be authenticated
+  /// [return] True if authentication is successful, false otherwise
  static Future<bool> login(String email, String password) async {
     logger.d('Attempting to log in as $email');   
     try {
       await _pocketBase.collection(_usersCollection)
           .authWithPassword(email, password)
           .timeout(_timeoutDuration);
+          isLoggedInNotifier.value = true;
+          logger.d('Saving auth token for $email');
+          await _storage.write(key: 'authToken', value: _pocketBase.authStore.token);
       logger.i('Logged in successfully as $email');
       return true;
     } on ClientException catch (e) {
@@ -262,10 +278,10 @@ class PocketBaseConfig {
     }
   }
 
-  /// Logs out the currently authenticated user by clearing the authentication store
    static Future<void> logout() async {
     try {
      _pocketBase.authStore.clear();
+     _storage.delete(key: _tokenKey);
       logger.i('Logged out successfully');
     } on ClientException catch (e) {
       _parseAuthError(e);
@@ -305,7 +321,26 @@ class PocketBaseConfig {
    }
   }
 
-}
+
+  static Future<bool> loadSession() async{
+    try{
+      final authToken = await _storage.read(key: _tokenKey);
+      if (authToken == null || authToken.isEmpty) {
+      logger.d('No auth token found in storage');
+      return false;
+    }
+      _pocketBase.authStore.save(authToken, null);
+      await _pocketBase.collection('users').authRefresh();
+      logger.i('Session loaded successfully, user is logged in');
+      return true;
+    }
+    catch(e){
+      logger.e('Session validation failed: $e');
+    _pocketBase.authStore.clear();
+    isLoggedInNotifier.value = false;
+    return false;
+    }
+  }
 
 void main() {
   group('PocketBaseConfig Integration Tests', () {
@@ -351,8 +386,8 @@ void main() {
 
 /// Helper function to parse and log errors from pocketbase client exceptions
 /// [parameterName] [e] The ClientException thrown by the pocketbase client
-
-void _parsePocketBaseError(ClientException e) {
+ 
+static void _parsePocketBaseError(ClientException e) {
   final data = e.response['data'] as Map<String, dynamic>?;
   final status = e.response['status'] as int?;
 
@@ -369,7 +404,7 @@ void _parsePocketBaseError(ClientException e) {
   }
 }
 
-void _parseAuthError(ClientException e) {
+static void _parseAuthError(ClientException e) {
   final data = e.response['data'] as Map<String, dynamic>?;
   final status = e.response['status'] as int?;
   
@@ -382,7 +417,7 @@ void _parseAuthError(ClientException e) {
       logger.e('Invalid email or password');
       break;
     case 403:
-      logger.e('Account disabled or email not verified');
+      logger.e('Account disabled or email not verified 403 : {${data?['message'] ?? 'Forbidden'}}');
       break;
     case 429:
       logger.e('Too many attempts, please try again later');
@@ -390,4 +425,5 @@ void _parseAuthError(ClientException e) {
     default:
       logger.e('Status $status: ${data?['message'] ?? 'An error occurred'}');
   }
+}
 }

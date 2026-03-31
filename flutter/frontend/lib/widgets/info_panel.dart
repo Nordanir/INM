@@ -6,13 +6,10 @@ import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/widget_text.dart';
 import 'package:frontend/providers/display_provider.dart';
-import 'package:frontend/providers/pocket_base_config.dart';
 import 'package:frontend/providers/search_provider.dart';
 import 'package:frontend/themes/text_theme.dart';
 import 'package:frontend/utils/text_display_widgets.dart';
-import 'package:frontend/widgets/auth.dart';
 import 'package:frontend/utils/time_display.dart';
-import 'package:pocketbase/pocketbase.dart';
 import 'package:provider/provider.dart';
 
 class InfoPanel extends StatelessWidget {
