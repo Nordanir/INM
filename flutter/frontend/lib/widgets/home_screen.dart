@@ -20,11 +20,18 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-   
 
-     return ValueListenableBuilder<bool>(
+     return ValueListenableBuilder<bool?>(
       valueListenable: PocketBaseConfig.isLoggedInNotifier,
       builder: (context, isLoggedIn, _) {
+        if (isLoggedIn == null) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+        
         return isLoggedIn ? _BuildHomeScreen() : AuthScreen();
       },
     );

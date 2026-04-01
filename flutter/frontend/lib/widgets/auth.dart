@@ -77,24 +77,6 @@ class _LoginState extends State<Login> {
           title: password,
           obscureText: true,
         ),
-        SizedBox(height: AppDimensions.normalSpacing(context)),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Row(
-            children: [
-              Checkbox(
-                activeColor: accent,
-                value: isKeepLogin,
-                onChanged: (_) {
-                  setState(() {
-                    isKeepLogin = !isKeepLogin;
-                  });
-                },
-              ),
-              DisplayText(text: rememberMe, textStyle: currentTheme.bodyLarge),
-            ],
-          ),
-        ),
 
         Spacer(),
 
