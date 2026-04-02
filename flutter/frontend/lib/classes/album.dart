@@ -9,6 +9,7 @@ class Album extends Entity {
   int _numberOfTracks;
   List<Track> _tracks;
   List<Artist> _artists = [];
+  
   int get durationInSeconds => _durationInSeconds;
 
   set  durationInSeconds(int value) => _durationInSeconds = value;

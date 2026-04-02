@@ -6,7 +6,6 @@ import 'package:frontend/providers/display_provider.dart';
 import 'package:frontend/providers/pocket_base_config.dart';
 import 'package:frontend/providers/search_provider.dart';
 import 'package:frontend/widgets/album_panel.dart';
-import 'package:frontend/providers/album_provider.dart';
 import 'package:frontend/widgets/auth.dart';
 import 'package:frontend/widgets/info_panel.dart';
 import 'package:frontend/widgets/search_bar.dart';
@@ -56,11 +55,10 @@ class _BuildHomeScreenState extends State<_BuildHomeScreen> {
 
   Future<void> _loadAlbums() async {
     try {
-      final albumProvider = Provider.of<AlbumProvider>(context, listen: false);
       final displayProvider = Provider.of<DisplayProvider>(context);
-      albumProvider.albums = await PocketBaseConfig.getAlbums();
-
-      displayProvider.displayEntities = albumProvider.albums;
+      final entities = await PocketBaseConfig.getAlbums();
+      displayProvider.displayEntities = entities;
+      displayProvider.allEntities = entities;
     } finally {
       setState(() {
         isLoading = false;

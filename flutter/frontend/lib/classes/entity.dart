@@ -31,11 +31,12 @@ class Entity with ChangeNotifier {
     notifyListeners();
   }
 
-  Entity({required String id, required String title, String? coverUrl, Image? cover})
+  Entity({required String id, required String title, String? coverUrl, Image? cover, double? rating = 0.0})
     : _id = id,
       _title = title,
       _coverUrl = coverUrl,
-      _cover = cover;
+      _cover = cover,
+      _rating = rating;
   set rating(double? rating) {
     _rating = rating;
     notifyListeners();

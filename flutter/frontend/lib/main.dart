@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/providers/display_provider.dart';
-import 'package:frontend/providers/album_provider.dart';
 import 'package:frontend/providers/pocket_base_config.dart';
 import 'package:frontend/themes/text_theme.dart';
 import 'package:frontend/widgets/home_screen.dart';
@@ -48,7 +47,6 @@ void main() async {
         ChangeNotifierProvider<DisplayProvider>(
           create: (_) => DisplayProvider(),
         ),
-        ChangeNotifierProvider<AlbumProvider>(create: (_) => AlbumProvider()),
         ChangeNotifierProvider<SearchProvider>(create: (_) => SearchProvider()),
       ],
       child: const MyApp(),

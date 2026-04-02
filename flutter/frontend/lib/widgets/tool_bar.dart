@@ -5,7 +5,6 @@ import 'package:frontend/dimensions/content_list_dimensions.dart';
 import 'package:frontend/dimensions/tool_bar_dimension.dart';
 import 'package:frontend/providers/display_provider.dart';
 import 'package:frontend/providers/pocket_base_config.dart';
-import 'package:frontend/providers/album_provider.dart';
 import 'package:frontend/providers/search_provider.dart';
 import 'package:frontend/themes/text_theme.dart';
 import 'package:frontend/utils/text_display_widgets.dart';
@@ -175,7 +174,6 @@ class _SearchInAlbums extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentTheme = Theme.of(context);
-    final albumProvider = Provider.of<AlbumProvider>(context);
     final displayProvider = Provider.of<DisplayProvider>(context);
     return Container(
       height: ToolBarDimensions.toolBarHeight(context) * .6,
@@ -199,7 +197,7 @@ class _SearchInAlbums extends StatelessWidget {
           ),
         ),
         onSubmitted: (value) {
-          displayProvider.searchInAlbums(value, albumProvider.getAllAlbums());
+          displayProvider.searchInEntities(value, displayProvider.allEntities);
         },
       ),
     );
@@ -264,14 +262,12 @@ class HomeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final albumProvider = Provider.of<AlbumProvider>(context, listen: true);
     final searchProvider = Provider.of<SearchProvider>(context, listen: true);
     final displayProvider = Provider.of<DisplayProvider>(context);
     return ElevatedButton(
       style: _toolBarButtonStyle,
       onPressed: () async {
         final entities = await PocketBaseConfig.getAlbums();
-        albumProvider.albums = entities;
         displayProvider.displayEntities = entities;
         searchProvider.isSearching = false;
         displayProvider.changeSelectedEntity(null);

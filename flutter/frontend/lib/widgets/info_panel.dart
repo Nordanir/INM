@@ -6,8 +6,10 @@ import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/constants/widget_text.dart';
 import 'package:frontend/providers/display_provider.dart';
+import 'package:frontend/providers/pocket_base_config.dart';
 import 'package:frontend/providers/search_provider.dart';
 import 'package:frontend/themes/text_theme.dart';
+import 'package:frontend/utils/logger.dart';
 import 'package:frontend/utils/text_display_widgets.dart';
 import 'package:frontend/utils/time_display.dart';
 import 'package:provider/provider.dart';
@@ -400,9 +402,13 @@ class AddOrRemoveEntryButton extends StatelessWidget {
         ),
         onPressed: () async {
           if (searchProvider.isSearching) {
-            
+            await PocketBaseConfig.createAlbum(displayProvider.selectedEntity as Album);
           } else {
+            await PocketBaseConfig.deleteAlbum(displayProvider.selectedEntity as Album);
+            logger.i("Album removed from collection: ${displayProvider.selectedEntity?.title}");
             displayProvider.changeSelectedEntity(null);
+            
+
           }
         },
         child: (searchProvider.isSearching)

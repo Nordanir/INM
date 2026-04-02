@@ -2,15 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:frontend/classes/album.dart';
 import 'package:frontend/classes/entity.dart';
 import 'package:frontend/classes/track.dart';
+import 'package:frontend/utils/logger.dart';
 
 class DisplayProvider with ChangeNotifier {
   Entity? _selectedEntity;
   Track? _selectedTrack;
 
+  List<Entity> _allEntities = [];
+
   List<Entity> _displayEntities = [];
 
   List<Entity> get displayEntities => _displayEntities;
 
+  get allEntities => this._allEntities;
+
+  set allEntities(value) => this._allEntities = value;
   set displayEntities(List<Entity> entities) {
     _displayEntities = entities;
     notifyListeners();
@@ -18,6 +24,7 @@ class DisplayProvider with ChangeNotifier {
 
   void changeSelectedEntity(Entity? entity) {
     _selectedEntity = entity;
+    logger.i("Selected entity changed to: ${entity?.title}");
     notifyListeners();
   }
 
@@ -34,7 +41,7 @@ class DisplayProvider with ChangeNotifier {
     return _selectedTrack;
   }
 
-  void searchInAlbums(String? query, List<Entity> entities) {
+  void searchInEntities(String? query, List<Entity> entities) {
     if (query == null || query.isEmpty) {
       displayEntities = entities;
       notifyListeners();
@@ -57,7 +64,9 @@ class DisplayProvider with ChangeNotifier {
         break;
       case "Duration":
         displayEntities.sort(
-          (a, b) => (a as Album).durationInSeconds.compareTo((b as Album).durationInSeconds),
+          (a, b) => (a as Album).durationInSeconds.compareTo(
+            (b as Album).durationInSeconds,
+          ),
         );
         break;
       case "Number of tracks":
