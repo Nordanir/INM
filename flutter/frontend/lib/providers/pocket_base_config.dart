@@ -1,6 +1,9 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/classes/album.dart';
+import 'package:frontend/classes/entity.dart';
 import 'package:frontend/classes/track.dart';
 import 'package:frontend/utils/logger.dart';
 import 'package:pocketbase/pocketbase.dart';
@@ -121,7 +124,7 @@ class PocketBaseConfig {
   /// Retrieves albums from the pocketbase collection, including their associated tracks
   /// [return] A list of albums with their tracks
 
-  static Future<List<Album>> getAlbums() async {
+  static Future<List<Entity>> getAlbums() async {
     try {
       final albumResponse = await _pocketBase
           .collection(_albumsCollection)
@@ -203,6 +206,7 @@ class PocketBaseConfig {
         logger.i('Deleting tracks on album ": ${album.title}');
         for (Track track in album.tracks) {
           await deleteTrack(track);
+
         }
       }
 
@@ -211,6 +215,7 @@ class PocketBaseConfig {
           .collection(_albumsCollection)
           .delete(album.id)
           .timeout(_timeoutDuration);
+
     } on ArgumentError catch (e) {
       logger.e('Validation error for ${album.title}: $e');
       rethrow;

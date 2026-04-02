@@ -111,7 +111,6 @@ class SearchProvider extends ChangeNotifier {
 
     for (var group in releases) {
       final release = group['releases'][0];
-      print(release);
       final id = release['id'];
       final coverUrl = 'https://coverartarchive.org/release/$id/front-500.jpg';
 

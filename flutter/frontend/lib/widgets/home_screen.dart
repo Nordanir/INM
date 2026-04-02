@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/classes/entity.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/dimensions/content_list_dimensions.dart';
@@ -43,35 +44,28 @@ class _BuildHomeScreen extends StatefulWidget {
 }
 
 class _BuildHomeScreenState extends State<_BuildHomeScreen> {
-  bool isLoading = true;  
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (isLoading) {
-      _loadAlbums();
-    }
+  void initState() {
+    super.initState();
+    _loadAlbums();
   }
 
   Future<void> _loadAlbums() async {
-    try {
-      final displayProvider = Provider.of<DisplayProvider>(context);
-      final entities = await PocketBaseConfig.getAlbums();
-      displayProvider.displayEntities = entities;
-      displayProvider.allEntities = entities;
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
+    await context.read<DisplayProvider>().refresh();
   }
 
   @override
   Widget build(BuildContext context) {
+    final displayProvider = context.watch<DisplayProvider>();
+    if (displayProvider.isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    
     return Scaffold(
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _buildMainContent(context),
+      body: _buildMainContent(context),
     );
   }
 }

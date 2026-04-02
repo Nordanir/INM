@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/classes/album.dart';
 import 'package:frontend/classes/entity.dart';
 import 'package:frontend/classes/track.dart';
+import 'package:frontend/providers/pocket_base_config.dart';
 import 'package:frontend/utils/logger.dart';
 
 class DisplayProvider with ChangeNotifier {
@@ -12,15 +13,38 @@ class DisplayProvider with ChangeNotifier {
 
   List<Entity> _displayEntities = [];
 
+  bool _isLoading = false;
+
   List<Entity> get displayEntities => _displayEntities;
 
-  get allEntities => this._allEntities;
+  bool get isLoading => _isLoading;
 
-  set allEntities(value) => this._allEntities = value;
+  set isLoading(bool value) => {_isLoading = value, notifyListeners()};
+
+  List<Entity> get allEntities => _allEntities;
+
   set displayEntities(List<Entity> entities) {
     _displayEntities = entities;
     notifyListeners();
   }
+  set allEntities(List<Entity> value) {
+    _allEntities = value;
+    notifyListeners();
+  }
+
+  Future<void> refresh() async {
+  isLoading = true;
+  
+  try {
+    final entities = await PocketBaseConfig.getAlbums();
+    allEntities = entities;      // ✅ Uses setter
+    displayEntities = entities;  // ✅ Uses setter
+  } catch (e) {
+    debugPrint('Error: $e');
+  } finally {
+    isLoading = false;
+  }
+}
 
   void changeSelectedEntity(Entity? entity) {
     _selectedEntity = entity;
@@ -28,6 +52,11 @@ class DisplayProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  set selectedEntity( Entity? entity) {
+    _selectedEntity = entity;
+    logger.i("Selected entity changed to: ${entity?.title}");
+    notifyListeners();
+  }
   void changeSelectedTrack(Track? track) {
     _selectedTrack = track;
     notifyListeners();
@@ -40,6 +69,7 @@ class DisplayProvider with ChangeNotifier {
   Track? get selectedTrack {
     return _selectedTrack;
   }
+  
 
   void searchInEntities(String? query, List<Entity> entities) {
     if (query == null || query.isEmpty) {

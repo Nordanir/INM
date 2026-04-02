@@ -44,9 +44,7 @@ void main() async {
     
     MultiProvider(
       providers: [
-        ChangeNotifierProvider<DisplayProvider>(
-          create: (_) => DisplayProvider(),
-        ),
+        ChangeNotifierProvider(create: (_) => DisplayProvider()),
         ChangeNotifierProvider<SearchProvider>(create: (_) => SearchProvider()),
       ],
       child: const MyApp(),
