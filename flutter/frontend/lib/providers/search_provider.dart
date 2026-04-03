@@ -5,6 +5,7 @@ import 'package:frontend/classes/album.dart';
 import 'package:frontend/classes/artist.dart';
 import 'package:frontend/classes/entity.dart';
 import 'package:frontend/classes/track.dart';
+import 'package:frontend/utils/logger.dart';
 import 'package:http/http.dart' as http;
 
 enum SearchCategories { release, artist }
@@ -61,6 +62,7 @@ class SearchProvider extends ChangeNotifier {
 
   Future<List<Entity>> search() async {
     if (_querry != "") {
+      logger.i("Starting search with query: $_querry, category: $_searchCategory, offset: $_offSet");
       isSearchInProgress = true;
       final response = await http.get(
         Uri.parse(
@@ -69,7 +71,6 @@ class SearchProvider extends ChangeNotifier {
         headers: headers,
       );
       final bodyJson = json.decode(response.body);
-
       switch (searchCategory) {
         case 'release-group':
           return await _parseRelease(bodyJson['release-groups']);
@@ -108,17 +109,16 @@ class SearchProvider extends ChangeNotifier {
 
   Future<List<Album>> _parseRelease(List<dynamic> releases) async {
     List<Album> albums = [];
-
     for (var group in releases) {
       final release = group['releases'][0];
       final id = release['id'];
       final coverUrl = 'https://coverartarchive.org/release/$id/front-500.jpg';
-
+      logger.i(release);
       final album = Album(
         id: id,
         title: release['title'],
         coverUrl: coverUrl,
-        numberOfTracks: release['track-count'], 
+        numberOfTracks: release['track-count'] ?? 0, 
         tracks: await retrieveSongs(id),
         cover: Image.network(
           coverUrl,
@@ -127,6 +127,7 @@ class SearchProvider extends ChangeNotifier {
           },
         ),
       );
+      album.numberOfTracks = album.tracks.length;
       album.calculateAlbumDuration();
       albums.add(album);
     }
