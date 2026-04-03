@@ -270,7 +270,7 @@ class HomeButton extends StatelessWidget {
         final entities = await PocketBaseConfig.getAlbums();
         displayProvider.displayEntities = entities;
         searchProvider.isSearching = false;
-        displayProvider.changeSelectedEntity(null);
+        displayProvider.selectedEntity = null;
       },
       child: Icon(size: ToolBarDimensions.navBarButtonIconSize(), Icons.home),
     );

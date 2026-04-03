@@ -141,5 +141,5 @@ Future<void> search(BuildContext context) async {
   }
   displayProvider.displayEntities = results;
   searchProvider.isSearching = true;
-  displayProvider.changeSelectedEntity(null);
+  displayProvider.selectedEntity = null;
 }

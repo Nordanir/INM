@@ -113,8 +113,8 @@ class _DisplayCardState extends State<DisplayCard> {
       },
       child: GestureDetector(
         onTap: () {
-          displayProvider.changeSelectedTrack(null);
-          displayProvider.changeSelectedEntity(widget.entity);
+          displayProvider.selectedTrack = null;
+          displayProvider.selectedEntity = widget.entity;
         },
         child: AnimatedContainer(
           duration: Duration(milliseconds: 200),

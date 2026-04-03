@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/classes/entity.dart';
 import 'package:frontend/constants/colors.dart';
 import 'package:frontend/dimensions/app_dimension.dart';
 import 'package:frontend/dimensions/content_list_dimensions.dart';

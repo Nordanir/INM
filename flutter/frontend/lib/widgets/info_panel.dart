@@ -229,7 +229,7 @@ class _TrackCardState extends State<TrackCard> {
       },
       child: GestureDetector(
         onTap: () {
-          displayProvider.changeSelectedTrack(widget.track);
+          displayProvider.selectedTrack = widget.track;
         },
 
         child: AnimatedContainer(
@@ -374,10 +374,6 @@ class TrackInfo extends StatelessWidget {
 
 class AddOrRemoveEntryButton extends StatelessWidget {
   const AddOrRemoveEntryButton({super.key});
-
-  void callRefresh(BuildContext context) {
-    final displayProvider = Provider.of<DisplayProvider>(context, listen: false);
-  }
   @override
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context, listen: true);
@@ -407,12 +403,12 @@ class AddOrRemoveEntryButton extends StatelessWidget {
         onPressed: () async {
           if (searchProvider.isSearching) {
             await PocketBaseConfig.createAlbum(displayProvider.selectedEntity as Album);
-            callRefresh(context);
+            displayProvider.refresh();
           } else {
             await PocketBaseConfig.deleteAlbum(displayProvider.selectedEntity as Album);
             displayProvider.refresh();
             logger.i("Album removed from collection: ${displayProvider.selectedEntity?.title}");
-            displayProvider.changeSelectedEntity(null);
+            displayProvider.selectedEntity = null ;
             
 
           }
@@ -466,7 +462,7 @@ class _CloseButtonState extends State<CloseButton> {
           child: IconButton(
             style: IconButton.styleFrom(padding: EdgeInsets.zero),
             onPressed: () {
-              displayProvider.changeSelectedTrack(null);
+              displayProvider.selectedTrack = null;
             },
             hoverColor: Colors.transparent,
             highlightColor: Colors.transparent,

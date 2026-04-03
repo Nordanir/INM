@@ -10,57 +10,15 @@ class DisplayProvider with ChangeNotifier {
   Track? _selectedTrack;
 
   List<Entity> _allEntities = [];
-
   List<Entity> _displayEntities = [];
 
   bool _isLoading = false;
 
-  List<Entity> get displayEntities => _displayEntities;
-
   bool get isLoading => _isLoading;
-
   set isLoading(bool value) => {_isLoading = value, notifyListeners()};
 
   List<Entity> get allEntities => _allEntities;
-
-  set displayEntities(List<Entity> entities) {
-    _displayEntities = entities;
-    notifyListeners();
-  }
-  set allEntities(List<Entity> value) {
-    _allEntities = value;
-    notifyListeners();
-  }
-
-  Future<void> refresh() async {
-  isLoading = true;
-  
-  try {
-    final entities = await PocketBaseConfig.getAlbums();
-    allEntities = entities;      // ✅ Uses setter
-    displayEntities = entities;  // ✅ Uses setter
-  } catch (e) {
-    debugPrint('Error: $e');
-  } finally {
-    isLoading = false;
-  }
-}
-
-  void changeSelectedEntity(Entity? entity) {
-    _selectedEntity = entity;
-    logger.i("Selected entity changed to: ${entity?.title}");
-    notifyListeners();
-  }
-
-  set selectedEntity( Entity? entity) {
-    _selectedEntity = entity;
-    logger.i("Selected entity changed to: ${entity?.title}");
-    notifyListeners();
-  }
-  void changeSelectedTrack(Track? track) {
-    _selectedTrack = track;
-    notifyListeners();
-  }
+  List<Entity> get displayEntities => _displayEntities;
 
   Entity? get selectedEntity {
     return _selectedEntity;
@@ -69,7 +27,42 @@ class DisplayProvider with ChangeNotifier {
   Track? get selectedTrack {
     return _selectedTrack;
   }
-  
+
+  set selectedTrack(Track? track) {
+    _selectedTrack = track;
+    logger.i("Selected track changed to: ${track?.title}");
+    notifyListeners();
+  }
+
+  set displayEntities(List<Entity> entities) {
+    _displayEntities = entities;
+    notifyListeners();
+  }
+
+  set allEntities(List<Entity> value) {
+    _allEntities = value;
+    notifyListeners();
+  }
+
+  set selectedEntity(Entity? entity) {
+    _selectedEntity = entity;
+    logger.i("Selected entity changed to: ${entity?.title}");
+    notifyListeners();
+  }
+
+  Future<void> refresh() async {
+    isLoading = true;
+
+    try {
+      final entities = await PocketBaseConfig.getAlbums();
+      allEntities = entities; // ✅ Uses setter
+      displayEntities = entities; // ✅ Uses setter
+    } catch (e) {
+      debugPrint('Error: $e');
+    } finally {
+      isLoading = false;
+    }
+  }
 
   void searchInEntities(String? query, List<Entity> entities) {
     if (query == null || query.isEmpty) {
